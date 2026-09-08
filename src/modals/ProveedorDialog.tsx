@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useProyecto } from "@/hooks/useProyecto";
 import { conceptoForm, useModal } from "@/hooks/useModal";
 import * as api from "@/api";
@@ -6,7 +7,7 @@ import type { Proveedor } from "@/lib/types";
 import { fm } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogActions, DialogContent } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Input, NativeSelect } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { KV, Row } from "@/components/ui/misc";
 
@@ -14,6 +15,10 @@ export function ProveedorDialog({ d0, onSave }: { d0: Partial<Proveedor>; onSave
   const { p, calc, accion } = useProyecto();
   const { abrir, cerrar } = useModal();
   const [d, setD] = useState<Partial<Proveedor> & { nombre: string }>({ nombre: "", razon: "", banco: "", clabe: "", tel: "", nota: "", ...d0 });
+  // catálogo del usuario: proveedores usados en otros proyectos
+  const { data: catalogo } = useQuery({ queryKey: ["catalogo"], queryFn: api.listaCatalogo, staleTime: 300_000 });
+  const enProyecto = new Set(p.proveedores.map((x) => x.nombre.trim().toLowerCase()));
+  const sugeridos = (catalogo || []).filter((c) => !enProyecto.has(c.nombre.trim().toLowerCase()));
   const set = (k: keyof Proveedor, v: string) => setD((x) => ({ ...x, [k]: v }));
   const conceptos = d.id ? calc.partidas.flatMap((pa) => pa.conceptos.filter((c) => c.proveedorId === d.id).map((c) => ({ ...c, partida: pa.nombre }))) : [];
   const pagos = d.id ? p.pagos.filter((x) => x.proveedorId === d.id) : [];
@@ -25,12 +30,20 @@ export function ProveedorDialog({ d0, onSave }: { d0: Partial<Proveedor>; onSave
   const guardar = async () => {
     let id = "";
     const ok = await accion(async () => { id = await api.guardarProveedor(p.id, d); }, "Proveedor guardado");
-    if (ok) { onSave?.(id); cerrar(); }
+    if (ok) { api.recordarEnCatalogo({ nombre: d.nombre, razon: d.razon || "", banco: d.banco || "", clabe: d.clabe || "", tel: d.tel || "", nota: d.nota || "" }).catch(() => {}); onSave?.(id); cerrar(); }
   };
   const borrar = async () => { if (d.id && confirm("¿Borrar este proveedor?") && await accion(() => api.borrarProveedor(d.id!), "Proveedor borrado")) cerrar(); };
   return (
     <Dialog open onOpenChange={(o) => !o && cerrar()}>
       <DialogContent title={d.id ? d.nombre : "Nuevo proveedor"}>
+        {!d.id && sugeridos.length > 0 && (
+          <Field label="De mi catálogo" hint="Proveedores que ya usaste en otros proyectos. Al elegir uno se llenan sus datos.">
+            <NativeSelect value="" onChange={(e) => { const c = sugeridos.find((x) => x.id === e.target.value); if (c) setD({ nombre: c.nombre, razon: c.razon, banco: c.banco, clabe: c.clabe, tel: c.tel, nota: c.nota }); }}>
+              <option value="">Elegir…</option>
+              {sugeridos.map((c) => <option key={c.id} value={c.id}>{c.nombre}{c.clabe ? " · CLABE guardada" : ""}</option>)}
+            </NativeSelect>
+          </Field>
+        )}
         <Field label="Nombre corto (el que usas al hablar)"><Input autoFocus={!d.id} value={d.nombre} onChange={(e) => set("nombre", e.target.value)} /></Field>
         <Field label="Razón social / titular de la cuenta"><Input value={d.razon} onChange={(e) => set("razon", e.target.value)} /></Field>
         <div className="grid grid-cols-2 gap-3">

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Download, FileJson, LogOut, Trash2, UserPlus } from "lucide-react";
+import { Download, FileJson, LayoutTemplate, LogOut, Trash2, UserPlus } from "lucide-react";
 import { useProyecto } from "@/hooks/useProyecto";
 import { useSesion } from "@/hooks/useSesion";
 import * as api from "@/api";
@@ -15,6 +15,8 @@ import { Field } from "@/components/ui/label";
 import { MoneyInput } from "@/components/ui/money-input";
 import { Badge } from "@/components/ui/badge";
 import { Row } from "@/components/ui/misc";
+import { Dialog, DialogActions, DialogContent } from "@/components/ui/dialog";
+import type { PlantillaPartida } from "@/lib/types";
 
 /** Campos de meta con guardado al salir del campo. */
 function useMetaForm() {
@@ -29,6 +31,7 @@ export default function Ajustes() {
   const { p, calc } = useProyecto();
   const { m, setM, guardar } = useMetaForm();
   const set = (k: keyof Meta, v: string) => setM({ ...m, [k]: v });
+  const [plantilla, setPlantilla] = useState(false);
   return (
     <>
       <Card>
@@ -50,6 +53,11 @@ export default function Ajustes() {
           <Button variant="outline" onClick={() => exportarJSON(p)}><FileJson />Respaldo JSON</Button>
         </CardContent>
       </Card>
+      <Card>
+        <CardHeader><div><CardTitle>Plantilla</CardTitle><CardDescription>Guarda la estructura de esta obra (partidas, reparto de candados y nombres de conceptos, sin montos) para arrancar el siguiente proyecto desde ahí.</CardDescription></div></CardHeader>
+        <CardContent><Button variant="outline" onClick={() => setPlantilla(true)}><LayoutTemplate />Guardar como plantilla</Button></CardContent>
+      </Card>
+      <GuardarPlantilla open={plantilla} onClose={() => setPlantilla(false)} />
       <Card>
         <CardHeader><CardTitle>Sesión</CardTitle></CardHeader>
         <CardContent><Button variant="destructive" onClick={() => supabase.auth.signOut()}><LogOut />Cerrar sesión</Button></CardContent>
@@ -111,5 +119,38 @@ function Miembros() {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function GuardarPlantilla({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { p, calc } = useProyecto();
+  const qc = useQueryClient();
+  const [nombre, setNombre] = useState(p.meta.nombre);
+  const [desc, setDesc] = useState("");
+  const [cargando, setCargando] = useState(false);
+  const base = calc.totalCandados > 0 ? calc.totalCandados : p.meta.presupuestoObra;
+  const cuerpo: PlantillaPartida[] = p.partidas.map((pa) => ({
+    nombre: pa.nombre, contingencia: pa.contingencia,
+    pct: base > 0 ? Math.round((pa.candado / base) * 1000) / 10 : 0,
+    conceptos: pa.conceptos.map((c) => ({ nombre: c.nombre, unidad: c.unidad || undefined, prioridad: c.prioridad })),
+  }));
+  const guardar = async () => {
+    setCargando(true);
+    try { await api.guardarPlantilla(nombre.trim(), desc.trim(), cuerpo); qc.invalidateQueries({ queryKey: ["plantillas"] }); toast.success("Plantilla guardada"); onClose(); }
+    catch (e) { toast.error("No se pudo guardar", { description: e instanceof Error ? e.message : String(e) }); }
+    finally { setCargando(false); }
+  };
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent title="Guardar como plantilla">
+        <Field label="Nombre de la plantilla"><Input autoFocus value={nombre} onChange={(e) => setNombre(e.target.value)} /></Field>
+        <Field label="Descripción"><Input value={desc} placeholder="Ej. casa de 3 recámaras, mobiliario completo" onChange={(e) => setDesc(e.target.value)} /></Field>
+        <p className="text-[13px] text-ink-2">Se guardan {p.partidas.length} partidas con su porcentaje de candado y {calc.conceptos.length} nombres de conceptos. Los montos no se guardan.</p>
+        <DialogActions>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button disabled={!nombre.trim() || cargando} onClick={guardar}>{cargando ? "Guardando…" : "Guardar"}</Button>
+        </DialogActions>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from "@/lib/supabase";
-import type { Concepto, Excedente, Meta, Miembro, Pago, Partida, Proveedor, Proyecto, ProyectoResumen, Relacion, Traspaso } from "@/lib/types";
+import type { Adjunto, CatalogoProveedor, Concepto, Excedente, Meta, Miembro, Pago, Partida, PlantillaGuardada, PlantillaPartida, Proveedor, Proyecto, ProyectoResumen, Relacion, Traspaso } from "@/lib/types";
 
 const ok = <T,>({ data, error }: { data: T | null; error: { message: string } | null }): T => {
   if (error) throw new Error(error.message);
@@ -195,3 +195,49 @@ export async function listaMiembros(proyectoId: string): Promise<Miembro[]> {
 }
 export const agregarMiembro = (proyectoId: string, email: string, rol: string) => supabase.rpc("agregar_miembro", { p: proyectoId, correo: email, r: rol }).then(ok);
 export const quitarMiembro = (proyectoId: string, userId: string) => supabase.from("proyecto_miembros").delete().eq("proyecto_id", proyectoId).eq("user_id", userId).then(ok);
+
+// ── catálogo de proveedores (por usuario, entre proyectos) ──────
+export async function listaCatalogo(): Promise<CatalogoProveedor[]> {
+  return ok(await supabase.from("catalogo_proveedores").select("id,nombre,razon,banco,clabe,tel,nota").order("nombre"));
+}
+/** Guarda o actualiza en el catálogo por nombre. No falla la operación principal si esto falla. */
+export async function recordarEnCatalogo(d: Omit<CatalogoProveedor, "id">) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase.from("catalogo_proveedores").upsert({ user_id: user.id, nombre: d.nombre.trim(), razon: d.razon || "", banco: d.banco || "", clabe: d.clabe || "", tel: d.tel || "", nota: d.nota || "", updated_at: new Date().toISOString() }, { onConflict: "user_id,nombre" });
+}
+export const borrarDelCatalogo = (id: string) => supabase.from("catalogo_proveedores").delete().eq("id", id).then(ok);
+
+// ── plantillas guardadas por el usuario ─────────────────────────
+export async function listaPlantillas(): Promise<PlantillaGuardada[]> {
+  return ok(await supabase.from("plantillas").select("id,nombre,descripcion,cuerpo,created_at").order("created_at", { ascending: false }));
+}
+export const guardarPlantilla = (nombre: string, descripcion: string, cuerpo: PlantillaPartida[]) => supabase.from("plantillas").insert({ nombre, descripcion, cuerpo }).then(ok);
+export const borrarPlantilla = (id: string) => supabase.from("plantillas").delete().eq("id", id).then(ok);
+
+// ── adjuntos (Supabase Storage, bucket privado "adjuntos") ─────
+const BUCKET = "adjuntos";
+export async function listaAdjuntos(proyectoId: string): Promise<Adjunto[]> {
+  const rows = ok<any[]>(await supabase.from("adjuntos").select("*").eq("proyecto_id", proyectoId).order("created_at"));
+  return rows.map((a) => ({ id: a.id, proyectoId: a.proyecto_id, conceptoId: a.concepto_id, pagoId: a.pago_id, nombre: a.nombre, ruta: a.ruta, tipo: a.tipo || "", tamano: a.tamano || 0, createdAt: a.created_at }));
+}
+export async function subirAdjunto(proyectoId: string, destino: { conceptoId?: string; pagoId?: string }, file: File) {
+  const ext = (file.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const ruta = `${proyectoId}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from(BUCKET).upload(ruta, file, { contentType: file.type || undefined, upsert: false });
+  if (error) throw new Error(error.message);
+  await supabase.from("adjuntos").insert({ proyecto_id: proyectoId, concepto_id: destino.conceptoId || null, pago_id: destino.pagoId || null, nombre: file.name, ruta, tipo: file.type || "", tamano: file.size }).then(ok);
+}
+export async function borrarAdjunto(a: Adjunto) {
+  await supabase.storage.from(BUCKET).remove([a.ruta]);
+  await supabase.from("adjuntos").delete().eq("id", a.id).then(ok);
+}
+/** URLs firmadas (una hora) para abrir o previsualizar. */
+export async function urlsFirmadas(rutas: string[]): Promise<Record<string, string>> {
+  if (!rutas.length) return {};
+  const { data, error } = await supabase.storage.from(BUCKET).createSignedUrls(rutas, 3600);
+  if (error) throw new Error(error.message);
+  const out: Record<string, string> = {};
+  for (const d of data || []) if (d.signedUrl && d.path) out[d.path] = d.signedUrl;
+  return out;
+}

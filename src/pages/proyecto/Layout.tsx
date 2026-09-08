@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useParams, Link } from "react-router-dom";
-import { ArrowLeft, BarChart3, CreditCard, FileText, Hammer, Home, MoreHorizontal, Settings, ShoppingCart, Users, Plus } from "lucide-react";
+import { ArrowLeft, BarChart3, ClipboardList, CreditCard, FileText, Hammer, Home, MoreHorizontal, Settings, ShoppingCart, Users, Plus } from "lucide-react";
 import { ProyectoContext, useAccion, useCtxValue, useProyecto, useProyectoQuery } from "@/hooks/useProyecto";
 import { ModalProvider, useModal } from "@/hooks/useModal";
 import { cn, fm, pct } from "@/lib/utils";
@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 const NAV = [
   ["hoy", "Hoy", Home], ["obra", "Obra", Hammer], ["compras", "Compras", ShoppingCart], ["pagos", "Pagos", CreditCard], ["relaciones", "Relaciones", FileText],
-  ["resumen", "Resumen", BarChart3], ["proveedores", "Proveedores", Users], ["ajustes", "Ajustes", Settings],
+  ["resumen", "Resumen", BarChart3], ["reporte", "Reporte", ClipboardList], ["proveedores", "Proveedores", Users], ["ajustes", "Ajustes", Settings],
 ] as const;
 const MOVIL = new Set(["hoy", "obra", "compras", "pagos"]);
 
@@ -49,7 +49,7 @@ function Shell() {
   return (
     <div className="min-h-dvh md:flex">
       {/* barra lateral en escritorio */}
-      <aside className="hidden md:flex md:w-56 md:flex-col md:border-r md:border-border-2 md:sticky md:top-0 md:h-dvh">
+      <aside className="no-print hidden md:flex md:w-56 md:flex-col md:border-r md:border-border-2 md:sticky md:top-0 md:h-dvh">
         <div className="px-5 pt-5 pb-4">
           <Link to="/" className="anno hover:text-foreground inline-flex items-center gap-1"><ArrowLeft className="size-3" />Proyectos</Link>
           <h1 className="text-[17px] font-semibold leading-tight mt-3 truncate" title={p.meta.nombre}>{p.meta.nombre}</h1>
@@ -73,7 +73,7 @@ function Shell() {
 
       <div className="flex-1 min-w-0 flex flex-col">
         {/* encabezado en móvil */}
-        <header className="md:hidden sticky top-0 z-20 border-b border-border-2 bg-background/95 backdrop-blur px-4 pt-2 pb-2" style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top))" }}>
+        <header className="no-print md:hidden sticky top-0 z-20 border-b border-border-2 bg-background/95 backdrop-blur px-4 pt-2 pb-2" style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top))" }}>
           <div className="flex items-center gap-2 min-h-11">
             <Link to="/" className="text-ink-2 -ml-2 p-2" aria-label="Mis proyectos"><ArrowLeft className="size-5 stroke-[1.75]" /></Link>
             <div className="min-w-0 flex-1">
@@ -89,10 +89,10 @@ function Shell() {
         </main>
 
         {/* botón flotante: registrar pago desde cualquier vista */}
-        <Button className="fixed right-4 z-30 h-12 px-5 shadow-[0_6px_20px_-8px_rgba(23,23,22,.5)] md:bottom-8 md:right-10" style={{ bottom: "calc(4.25rem + env(safe-area-inset-bottom))" }} onClick={() => abrir({ tipo: "pago", d: {} })}><Plus />Pago</Button>
+        <Button className="no-print fixed right-4 z-30 h-13 rounded-full px-6 shadow-[0_6px_20px_-8px_rgba(23,23,22,.5)] md:bottom-8 md:right-10" style={{ bottom: "calc(4.25rem + env(safe-area-inset-bottom))" }} onClick={() => abrir({ tipo: "pago", d: {} })}><Plus />Pago</Button>
 
         {/* pestañas inferiores en móvil */}
-        <nav className="md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-border-2 bg-panel/95 backdrop-blur grid grid-cols-5" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+        <nav className="no-print md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-border-2 bg-panel/95 backdrop-blur grid grid-cols-5" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
           {NAV.filter(([k]) => MOVIL.has(k)).map(([k, v, Icon]) => (
             <NavLink key={k} to={k} className={({ isActive }) => cn("flex flex-col items-center justify-center gap-1 h-14 font-mono uppercase text-[9px] tracking-[0.08em]", isActive ? "text-foreground" : "text-ink-3")}>
               {({ isActive }) => <><Icon className={cn("size-[22px]", isActive ? "stroke-[2]" : "stroke-[1.5]")} />{v}</>}

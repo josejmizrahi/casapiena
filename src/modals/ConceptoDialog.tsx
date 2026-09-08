@@ -15,6 +15,7 @@ import { KV, Row } from "@/components/ui/misc";
 import { SelectProveedor } from "@/components/SelectProveedor";
 import { FlujoBadge, FormaBadge } from "@/components/Etiquetas";
 import { cn } from "@/lib/utils";
+import { Adjuntos } from "@/components/Adjuntos";
 
 export function ConceptoDialog({ d0 }: { d0: api.ConceptoForm }) {
   const { p, calc, accion, conceptoDe } = useProyecto();
@@ -111,6 +112,7 @@ export function ConceptoDialog({ d0 }: { d0: api.ConceptoForm }) {
           {d.id && c && Math.abs(c.desviacion) > 0.005 && <KV k={`Línea base ${fm2(c.baseTotal)} · desviación`} v={`${c.desviacion > 0 ? "+" : ""}${fm2(c.desviacion)}`} tone={c.desviacion > 0 ? "bad" : "ok"} />}
           {d.id && d.avance > 0 && total > 0 && <KV k={`Avance físico ${d.avance}% · pagado ${pct(pagado, total)}%`} v={pct(pagado, total) - d.avance >= DESFASE_AVISO ? "Pagado por adelantado" : "En ritmo"} tone={pct(pagado, total) - d.avance >= DESFASE_AVISO ? "warn" : "ok"} />}
         </div>
+        {d.id && <Adjuntos proyectoId={p.id} conceptoId={d.id} />}
         {d.id && ajustes.length > 0 && (
           <div>
             <Label>Bitácora del presupuesto</Label>

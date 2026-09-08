@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KV } from "@/components/ui/misc";
 import { SelectProveedor } from "@/components/SelectProveedor";
+import { Adjuntos } from "@/components/Adjuntos";
 
 export function PagoDialog({ d0 }: { d0: Partial<api.PagoForm> }) {
   const { p, accion, conceptoDe, nextRel } = useProyecto();
@@ -63,6 +64,7 @@ export function PagoDialog({ d0 }: { d0: Partial<api.PagoForm> }) {
             <KV k={sobrepasa ? "Se pasa del total por" : "Quedaría por pagar"} v={fm2(Math.abs(con.total - yaPagado - d.monto))} tone={sobrepasa ? "bad" : undefined} />
           </div>
         )}
+        {d.id && <Adjuntos proyectoId={p.id} pagoId={d.id} />}
         {con && con.total === 0 && <p className="text-xs text-ink-3">Este concepto no tiene presupuesto capturado; el pago se registra pero no se puede comparar.</p>}
         <DialogActions>
           {d.id && <Button variant="destructive" onClick={borrar}>Borrar</Button>}

@@ -45,7 +45,7 @@ function BotonTabla({ tabla, setTabla }: { tabla: boolean; setTabla: (v: boolean
 function Tooltip({ pctX, children }: { pctX: number; children: React.ReactNode }) {
   const izq = pctX > 60;
   return (
-    <div className="pointer-events-none absolute top-0 z-10 rounded-sm bg-foreground text-background px-2 py-1.5 text-[11.5px] leading-snug num whitespace-nowrap" style={{ left: izq ? undefined : `calc(${pctX}% + 8px)`, right: izq ? `calc(${100 - pctX}% + 8px)` : undefined }}>{children}</div>
+    <div className="pointer-events-none absolute top-0 z-10 rounded-[8px] bg-foreground text-background px-2 py-1.5 text-[11.5px] leading-snug num whitespace-nowrap" style={{ left: izq ? undefined : `calc(${pctX}% + 8px)`, right: izq ? `calc(${100 - pctX}% + 8px)` : undefined }}>{children}</div>
   );
 }
 

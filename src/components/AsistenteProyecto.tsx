@@ -1,8 +1,11 @@
 import { useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Check, Lock, Plus, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Lock, Plus, Trash2, X } from "lucide-react";
 import * as api from "@/api";
 import { PLANTILLAS, type Plantilla } from "@/lib/plantillas";
+import type { PlantillaPartida } from "@/lib/types";
 import { cn, fm, num } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogActions, DialogContent } from "@/components/ui/dialog";
@@ -11,7 +14,7 @@ import { Field } from "@/components/ui/label";
 import { MoneyInput } from "@/components/ui/money-input";
 import { KV } from "@/components/ui/misc";
 
-interface Fila { nombre: string; pct: number; contingencia?: boolean }
+interface Fila { nombre: string; pct: number; contingencia?: boolean; conceptos?: PlantillaPartida["conceptos"] }
 const PASOS = ["Proyecto", "Partidas", "Candados", "Listo"];
 
 /** Asistente de cuatro pasos: datos, plantilla de partidas, reparto de candados, resumen. */
@@ -25,8 +28,20 @@ export function AsistenteProyecto({ open, onClose }: { open: boolean; onClose: (
   const [filas, setFilas] = useState<Fila[]>(PLANTILLAS[0].partidas);
   const [nueva, setNueva] = useState("");
   const [creando, setCreando] = useState("");
+  const qc = useQueryClient();
+  const { data: mias } = useQuery({ queryKey: ["plantillas"], queryFn: api.listaPlantillas, enabled: open, staleTime: 60_000 });
+  const [miaId, setMiaId] = useState<string | null>(null);
 
-  const elegir = (pl: Plantilla) => { setPlantilla(pl); setFilas(pl.partidas.map((x) => ({ ...x }))); };
+  const elegir = (pl: Plantilla) => { setPlantilla(pl); setMiaId(null); setFilas(pl.partidas.map((x) => ({ ...x }))); };
+  const elegirMia = (id: string) => {
+    const m = (mias || []).find((x) => x.id === id); if (!m) return;
+    setMiaId(id); setPlantilla({ id: "mia", nombre: m.nombre, descripcion: m.descripcion, partidas: [] });
+    setFilas(m.cuerpo.map((x) => ({ nombre: x.nombre, pct: x.pct || 0, contingencia: x.contingencia, conceptos: x.conceptos })));
+  };
+  const borrarMia = async (id: string) => {
+    if (!confirm("¿Borrar esta plantilla?")) return;
+    try { await api.borrarPlantilla(id); qc.invalidateQueries({ queryKey: ["plantillas"] }); if (miaId === id) elegir(PLANTILLAS[0]); } catch (e) { toast.error(e instanceof Error ? e.message : String(e)); }
+  };
   const totalPct = useMemo(() => filas.reduce((s, f) => s + f.pct, 0), [filas]);
   const asignado = (presupuesto * totalPct) / 100;
   const libre = presupuesto - asignado;
@@ -43,6 +58,10 @@ export function AsistenteProyecto({ open, onClose }: { open: boolean; onClose: (
       for (const f of filas) {
         setCreando(`Partida ${i + 1} de ${filas.length}…`);
         await api.guardarPartida(p.id, { nombre: f.nombre, candado: Math.round((presupuesto * f.pct) / 100), contingencia: !!f.contingencia }, i++);
+        if (f.conceptos?.length) {
+          const { data: pa } = await supabase.from("partidas").select("id").eq("proyecto_id", p.id).eq("orden", i - 1).single();
+          if (pa) await supabase.from("conceptos").insert(f.conceptos.map((c, j) => ({ partida_id: pa.id, nombre: c.nombre, unidad: c.unidad || "", prioridad: c.prioridad || "sinClasificar", orden: j })));
+        }
       }
       toast.success(`Proyecto "${nombre.trim()}" creado`);
       onClose();
@@ -71,6 +90,22 @@ export function AsistenteProyecto({ open, onClose }: { open: boolean; onClose: (
         {paso === 1 && (
           <div className="space-y-3">
             <p className="text-sm text-ink-3">Elige el tipo de obra. Las partidas son las cajas donde vas a agrupar conceptos; puedes quitar, agregar o renombrar.</p>
+            {(mias || []).length > 0 && (
+              <div className="space-y-1.5">
+                <div className="anno">Mis plantillas</div>
+                {(mias || []).map((m) => (
+                  <div key={m.id} className={cn("flex items-center gap-2 rounded-md border p-3", miaId === m.id ? "border-foreground" : "border-border-2")}>
+                    <button type="button" className="min-w-0 flex-1 text-left" onClick={() => elegirMia(m.id)}>
+                      <div className="font-medium text-[14px] truncate">{m.nombre}</div>
+                      <div className="text-[12px] text-ink-3 truncate">{m.descripcion || `${m.cuerpo.length} partidas`}</div>
+                    </button>
+                    {miaId === m.id && <Check className="size-4 shrink-0" />}
+                    <Button size="icon" variant="ghost" className="size-8 text-ink-3 shrink-0" aria-label="Borrar plantilla" onClick={() => borrarMia(m.id)}><Trash2 /></Button>
+                  </div>
+                ))}
+                <div className="anno pt-2">Plantillas base</div>
+              </div>
+            )}
             <div className="grid gap-2 sm:grid-cols-2">
               {PLANTILLAS.map((pl) => (
                 <button key={pl.id} type="button" onClick={() => elegir(pl)} className={cn("rounded-md border p-3 text-left transition-colors", plantilla.id === pl.id ? "border-foreground" : "border-border-2 hover:bg-muted")}>
@@ -123,6 +158,7 @@ export function AsistenteProyecto({ open, onClose }: { open: boolean; onClose: (
               <KV k="Presupuesto general" v={fm(presupuesto)} />
               <KV k="Honorarios" v={`${honorarios}% · ${fm((presupuesto * honorarios) / 100)} sobre el presupuesto`} />
               <KV k="Partidas" v={String(filas.length)} />
+              {filas.some((f) => f.conceptos?.length) && <KV k="Conceptos de la plantilla" v={String(filas.reduce((s, f) => s + (f.conceptos?.length || 0), 0))} />}
               <KV k="Candados asignados" v={fm(asignado)} />
             </div>
             <p className="text-sm text-ink-3">Al crearlo te llevo a la vista <b>Hoy</b>, que te dice qué sigue: capturar conceptos en cada partida, asignar proveedores y registrar el primer pago.</p>
