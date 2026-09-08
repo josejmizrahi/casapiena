@@ -42,7 +42,7 @@ export interface ProyectoResumen {
   id: string; nombre: string; clientes: string; archivado: boolean; created_at: string;
   presupuesto_obra: number; owner_id: string;
 }
-export interface Miembro { user_id: string; email: string; rol: "propietario" | "editor" | "lector" }
+export interface Miembro { user_id: string | null; email: string; rol: "propietario" | "editor" | "lector"; pendiente: boolean }
 
 // Etiquetas y órdenes de los catálogos
 export const ESTADOS: Record<EstadoPresupuesto, string> = { pendiente: "Faltan presupuestos", porCerrar: "Próximo a cerrar", cerrado: "Cerrado" };

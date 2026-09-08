@@ -193,8 +193,10 @@ export const borrarExc = (id: string) => supabase.from("excedentes").delete().eq
 export async function listaMiembros(proyectoId: string): Promise<Miembro[]> {
   return ok(await supabase.rpc("miembros_de", { p: proyectoId }));
 }
-export const agregarMiembro = (proyectoId: string, email: string, rol: string) => supabase.rpc("agregar_miembro", { p: proyectoId, correo: email, r: rol }).then(ok);
+/** Devuelve "agregado" si el correo ya tenía cuenta, o "invitado" si quedó pendiente. */
+export const agregarMiembro = async (proyectoId: string, email: string, rol: string): Promise<"agregado" | "invitado"> => ok(await supabase.rpc("agregar_miembro", { p: proyectoId, correo: email, r: rol }));
 export const quitarMiembro = (proyectoId: string, userId: string) => supabase.from("proyecto_miembros").delete().eq("proyecto_id", proyectoId).eq("user_id", userId).then(ok);
+export const quitarInvitacion = (proyectoId: string, email: string) => supabase.from("invitaciones").delete().eq("proyecto_id", proyectoId).eq("email", email).then(ok);
 
 // ── catálogo de proveedores (por usuario, entre proyectos) ──────
 export async function listaCatalogo(): Promise<CatalogoProveedor[]> {
