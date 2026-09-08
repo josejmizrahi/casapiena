@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Archive, ArchiveRestore, FolderOpen, LogOut, MoreHorizontal, Plus, Upload, KeyRound, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, FolderOpen, LogOut, MoreHorizontal, Plus, Upload, KeyRound, Trash2, UserRound } from "lucide-react";
 import * as api from "@/api";
 import { supabase } from "@/lib/supabase";
 import { importarProyecto, validarRespaldo } from "@/lib/importar";
@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Empty } from "@/components/ui/misc";
 import { Segmented } from "@/components/ui/segmented";
 import { AsistenteProyecto } from "@/components/AsistenteProyecto";
+import { PerfilDialog } from "@/components/PerfilDialog";
 import { useSesion } from "@/hooks/useSesion";
 
 export default function Proyectos() {
@@ -24,6 +25,7 @@ export default function Proyectos() {
   const [vista, setVista] = useState<"activos" | "archivados">("activos");
   const [nuevo, setNuevo] = useState(false);
   const [pass, setPass] = useState(false);
+  const [perfil, setPerfil] = useState(false);
   const [progreso, setProgreso] = useState("");
   const file = useRef<HTMLInputElement>(null);
   const refrescar = () => qc.invalidateQueries({ queryKey: ["proyectos"] });
@@ -61,6 +63,7 @@ export default function Proyectos() {
               <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Más"><MoreHorizontal /></Button></DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem className="sm:hidden" onSelect={() => file.current?.click()}><Upload />Importar respaldo</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setPerfil(true)}><UserRound />Mi perfil y logo</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => setPass(true)}><KeyRound />Cambiar contraseña</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => supabase.auth.signOut()}><LogOut />Cerrar sesión</DropdownMenuItem>
               </DropdownMenuContent>
@@ -105,6 +108,7 @@ export default function Proyectos() {
       </main>
       <AsistenteProyecto open={nuevo} onClose={() => setNuevo(false)} />
       <CambiarPass open={pass} onClose={() => setPass(false)} />
+      <PerfilDialog open={perfil} onClose={() => setPerfil(false)} />
     </div>
   );
 }

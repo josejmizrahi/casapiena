@@ -1,16 +1,27 @@
-import { Printer } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Copy, Link2, Link2Off, Printer } from "lucide-react";
+import * as api from "@/api";
+import type { Perfil } from "@/lib/types";
 import { useProyecto } from "@/hooks/useProyecto";
 import { useSesion } from "@/hooks/useSesion";
+import { usePerfil } from "@/components/PerfilDialog";
 import { FLUJO, LOG } from "@/lib/types";
 import { HOY, fecha, fm, pct } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { StackedBar } from "@/components/ui/progress";
 import { Semaforo } from "./Hoy";
 
-/** Reporte para el cliente: una página imprimible (Guardar como PDF desde el navegador). */
-export default function Reporte() {
+/** Reporte para el cliente: una página imprimible (Guardar como PDF desde el navegador).
+ *  Con `publico` se muestra desde la liga compartida: sin sesión, sin botones de edición. */
+export default function Reporte({ publico, perfilPublico }: { publico?: boolean; perfilPublico?: Perfil } = {}) {
   const { p, calc, nombreProv, conceptoDe } = useProyecto();
   const sesion = useSesion();
+  const { data: perfilMio } = usePerfil();
+  const perfil = perfilPublico || perfilMio;
+  const firma = perfil?.nombre || perfil?.despacho ? [perfil?.nombre, perfil?.despacho].filter(Boolean).join(" · ") : sesion?.user.email || "";
   const hoy = HOY();
   const avance = pct(calc.pagadoTotal, calc.granTotal);
   const pendientes = p.pagos.filter((x) => x.estado !== "pagado").sort((a, b) => a.rel - b.rel || (a.fecha || "").localeCompare(b.fecha || ""));
@@ -25,14 +36,20 @@ export default function Reporte() {
   return (
     <div className="reporte space-y-6">
       <div className="flex items-start justify-between gap-3 no-print">
-        <p className="text-[13px] text-ink-2">Resumen de la obra para el cliente. Usa “Imprimir” y elige “Guardar como PDF”.</p>
+        <p className="text-[13px] text-ink-2">{publico ? "Reporte de obra compartido por tu arquitecta." : "Resumen de la obra para el cliente. Usa “Imprimir” y elige “Guardar como PDF”."}</p>
         <Button size="sm" onClick={imprimir}><Printer />Imprimir</Button>
       </div>
+      {!publico && <Compartir />}
 
       <header className="border-t-2 border-foreground pt-3">
         <div className="flex justify-between gap-3 anno"><span>Reporte de obra</span><span>{fecha(hoy)}</span></div>
-        <h1 className="text-[28px] md:text-[34px] font-semibold leading-tight mt-2 fig">{p.meta.nombre}</h1>
-        <div className="text-[14px] text-ink-2 mt-1">{p.meta.clientes || "—"}{sesion?.user.email ? ` · preparado por ${sesion.user.email}` : ""}</div>
+        <div className="flex items-start justify-between gap-4 mt-2">
+          <div className="min-w-0">
+            <h1 className="text-[28px] md:text-[34px] font-semibold leading-tight fig">{p.meta.nombre}</h1>
+            <div className="text-[14px] text-ink-2 mt-1">{p.meta.clientes || "—"}{firma ? ` · preparado por ${firma}` : ""}{perfil?.telefono ? ` · ${perfil.telefono}` : ""}</div>
+          </div>
+          {perfil?.logoUrl && <img src={perfil.logoUrl} alt={perfil.despacho || "Logo"} className="h-12 md:h-14 max-w-[140px] object-contain shrink-0" />}
+        </div>
       </header>
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3 border-y border-border-2 py-3">
@@ -118,5 +135,47 @@ export default function Reporte() {
 
       <footer className="border-t border-border pt-3 anno">Generado con Control de obra · {fecha(hoy)}</footer>
     </div>
+  );
+}
+
+/** Liga pública de solo lectura del reporte. */
+function Compartir() {
+  const { p } = useProyecto();
+  const qc = useQueryClient();
+  const { data: token } = useQuery({ queryKey: ["liga", p.id], queryFn: () => api.ligaReporte(p.id) });
+  const [cargando, setCargando] = useState(false);
+  const [url, setUrl] = useState("");
+  useEffect(() => { setUrl(token ? `${location.origin}${location.pathname}#/r/${token}` : ""); }, [token]);
+  const refrescar = () => qc.invalidateQueries({ queryKey: ["liga", p.id] });
+  const crear = async () => {
+    setCargando(true);
+    try { await api.crearLigaReporte(p.id); refrescar(); toast.success("Liga creada"); }
+    catch (e) { toast.error("No se pudo crear", { description: e instanceof Error ? e.message : String(e) }); }
+    finally { setCargando(false); }
+  };
+  const desactivar = async () => {
+    if (!confirm("¿Desactivar la liga? Quien la tenga dejará de ver el reporte.")) return;
+    try { await api.desactivarLigaReporte(p.id); refrescar(); toast.success("Liga desactivada"); } catch (e) { toast.error(e instanceof Error ? e.message : String(e)); }
+  };
+  const copiar = async () => { try { await navigator.clipboard.writeText(url); toast.success("Liga copiada"); } catch { toast.error("No se pudo copiar"); } };
+  return (
+    <section className="no-print border-t border-border-2 pt-3">
+      <div className="anno mb-2">Compartir con el cliente</div>
+      {url ? (
+        <div className="space-y-2">
+          <p className="text-[13px] text-ink-2">Quien tenga esta liga ve el reporte actualizado, sin cuenta y sin poder editar. No incluye datos bancarios ni archivos.</p>
+          <div className="flex gap-2">
+            <Input readOnly value={url} className="flex-1 text-[13px]" onFocus={(e) => e.currentTarget.select()} />
+            <Button variant="outline" onClick={copiar}><Copy />Copiar</Button>
+          </div>
+          <Button size="sm" variant="ghost" className="text-bad" onClick={desactivar}><Link2Off />Desactivar liga</Button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <p className="text-[13px] text-ink-2">Genera una liga de solo lectura para que el cliente consulte el reporte desde su teléfono, sin cuenta.</p>
+          <Button size="sm" variant="outline" disabled={cargando} onClick={crear}><Link2 />Crear liga para el cliente</Button>
+        </div>
+      )}
+    </section>
   );
 }
