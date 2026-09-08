@@ -1,55 +1,58 @@
-# Control de obra
+# Casa Piena · Control de obra
 
-App de control de presupuesto, pagos, compras y proveedores de obra.
-React + Vite, con Supabase como backend (Postgres + auth con correo y contraseña).
+App para llevar presupuesto, candados por partida, compras, pagos, relaciones y
+proveedores de una o varias obras. Cada proyecto es independiente y se puede
+compartir con otras personas por correo (editor o lector).
+
+**Pila:** React 18 + TypeScript + Vite, Tailwind CSS 4 con componentes estilo
+shadcn/ui (Radix), TanStack Query para datos, Supabase (Postgres + auth con
+correo y contraseña, RLS en todas las tablas).
 
 ## Antes de correr
 
-1. Aplica `schema.sql` y luego `02_set_motivo.sql` en el SQL Editor. Si la base ya
-   existía antes de septiembre 2026, aplica también `03_fix_rls_proyectos.sql`.
+1. Aplica en el SQL Editor de Supabase, en orden: `schema.sql`, `02_set_motivo.sql`,
+   `03_fix_rls_proyectos.sql`, `04_miembros.sql`.
 2. Crea tu usuario en Supabase → Authentication → Users → **Add user** (correo y
-   contraseña, con "Auto confirm"). La app entra con correo y contraseña; desde
-   la pantalla de proyectos puedes cambiarla.
-3. Copia `.env.example` a `.env` y pon tu publishable key
-   (Supabase → Project Settings → API → anon/publishable).
-
-## Proyecto inicial
-
-`seed/casapiena_inicial.json` es el respaldo del proyecto "Casa Piena — Mobiliario"
-(partidas y conceptos por cuarto, sin proveedores ni pagos). Para cargarlo, entra a la
-app y usa **Importar respaldo JSON**; se crea como proyecto tuyo.
+   contraseña, con "Auto confirm"). Desde "Mis proyectos" puedes cambiarla.
+3. Opcional: copia `.env.example` a `.env` y pon tu URL y publishable key. Si no,
+   se usan las del proyecto `casapiena` que vienen incrustadas.
 
 ## Local
 
 ```bash
 npm install
-npm run dev
+npm run dev      # http://localhost:5173
+npm run build    # lint + tsc + vite build
+npm test         # recorrido en Chromium con Supabase simulado (requiere npx playwright install chromium)
 ```
 
-## Publicar en GitHub Pages
+## Publicación
 
-1. Crea un repo y sube esta carpeta (rama `main`).
-2. En el repo: Settings → Pages → Source = **GitHub Actions**.
-3. El workflow `.github/workflows/pages.yml` compila y publica en cada push.
-4. La app queda en `https://usuario.github.io/repo/`.
+`.github/workflows/pages.yml` compila, corre `npm test` y publica en GitHub Pages en
+cada push a `main`. La app queda en https://josejmizrahi.github.io/casapiena/.
+Usa rutas con `#` (HashRouter) para que funcione en Pages sin configuración extra.
 
-La URL y la publishable key de Supabase vienen incrustadas como respaldo, así que
-funciona sin configurar nada. Si prefieres no tenerlas en el código, ponlas en
-Settings → Secrets and variables → Actions → Variables como `VITE_SUPABASE_URL`
-y `VITE_SUPABASE_ANON_KEY`; el workflow ya las lee.
+## Proyecto inicial
 
-## Deploy en Vercel (alternativa)
-
-`npx vercel --prod` desde esta carpeta. Framework: Vite.
+`seed/casapiena_inicial.json` es el respaldo del proyecto "Casa Piena — Mobiliario"
+(partidas y conceptos por cuarto). Cárgalo con **Importar respaldo** en "Mis proyectos".
 
 ## Cómo está armado
 
-- `src/lib/supabase.js` — cliente.
-- `src/lib/api.js` — todo el acceso a datos. `cargar()` arma el proyecto completo
-  en la forma que usa la interfaz; `importarProyecto()` sube un respaldo JSON del
-  artefacto (proveedores, partidas, conceptos, links, relaciones, pagos, traspasos).
-- `src/App.jsx` — login por magic link, selector de proyecto, importación.
-- `src/Tracker.jsx` — la interfaz. Cada cambio escribe en Supabase y recarga.
+```
+src/
+  api/index.ts        acceso a datos: carga completa del proyecto y todas las escrituras
+  lib/types.ts        tipos de dominio y catálogos (estados, prioridades, logística)
+  lib/calculos.ts     toda la aritmética: candados, comprometido, pagado, flujo de caja
+  lib/importar.ts     importación de respaldo JSON validada con zod
+  lib/exportar.ts     Excel (carga xlsx bajo demanda) y respaldo JSON
+  hooks/              sesión, proyecto (query + acciones) y diálogos
+  components/ui/      componentes base (button, card, dialog, input, badge…)
+  pages/              Login, Mis proyectos y las 7 vistas del proyecto
+  modals/             diálogos de concepto, partida, traspaso, pago, relación, excedente, proveedor
+  print/              documento imprimible de una relación
+tests/smoke.mjs       prueba de recorrido de todas las vistas y diálogos
+```
 
 La bitácora de presupuestos la escribe un trigger en la base, no el cliente:
 antes de actualizar un concepto se llama `set_motivo()` para dejar el motivo.
