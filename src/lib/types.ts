@@ -12,11 +12,15 @@ export interface Ajuste { id: string; fecha: string; anterior: number; nuevo: nu
 
 export interface Concepto {
   id: string; partidaId: string; nombre: string; proveedorId: string;
+  /** Total sin IVA. Si hay precio unitario, es cantidad × precioUnitario. */
   presupuesto: number; iva: number; base: { presupuesto: number; iva: number };
+  cantidad: number; unidad: string; precioUnitario: number;
+  /** Avance físico real, 0 a 100. */
+  avance: number;
   estado: EstadoPresupuesto; prioridad: Prioridad; logistica: Logistica;
   pedido: string; eta: string; nota: string; links: Link[]; ajustes: Ajuste[];
 }
-export interface Partida { id: string; nombre: string; candado: number; orden: number; conceptos: Concepto[] }
+export interface Partida { id: string; nombre: string; candado: number; orden: number; contingencia: boolean; conceptos: Concepto[] }
 export interface Proveedor { id: string; nombre: string; razon: string; banco: string; clabe: string; tel: string; nota: string }
 export interface Relacion { id: string; n: number; fecha: string; fechaLimite: string }
 export interface Pago {
@@ -49,3 +53,6 @@ export const SIGUIENTE: Partial<Record<Logistica, Logistica>> = { porComprar: "c
 export const PRIO: Record<Prioridad, string> = { indispensable: "Indispensable", flexible: "Flexible", opcional: "Opcional", exhibicion: "Exhibición", sinClasificar: "Sin clasificar" };
 export const PRIO_ORDEN: Prioridad[] = ["indispensable", "flexible", "opcional", "exhibicion", "sinClasificar"];
 export const STATUS_PAGO = ["Anticipo", "Parcialidad", "Finiquito", "Liquidación", "Único"];
+export const UNIDADES = ["pza", "m²", "ml", "m³", "kg", "lote", "juego", "servicio", "hr", "global"];
+/** Diferencia en puntos entre % pagado y % de avance físico a partir de la cual se avisa. */
+export const DESFASE_AVISO = 25;

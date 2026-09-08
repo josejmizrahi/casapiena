@@ -16,19 +16,20 @@ export async function exportarExcel(p: Proyecto, calc: Calculo) {
   const nums = rels.map((r) => r.n);
   type Fila = (string | number)[];
 
-  const gen: Fila[] = [[p.meta.nombre], [p.meta.clientes], [], ["Partida", "Concepto", "Proveedor", "Presupuesto", "IVA", "Total", "Presupuesto original", "Ajustes", "Candado vigente", "Comparativa", "Prioridad", "Estado", ...nums.map((r) => `Rel ${r}`), "Total pagado", "% Pagado", "Saldo a ejercer"]];
+  const gen: Fila[] = [[p.meta.nombre], [p.meta.clientes], [], ["Partida", "Concepto", "Proveedor", "Cantidad", "Unidad", "P. unitario", "Presupuesto", "IVA", "Total", "Presupuesto original", "Ajustes", "Candado vigente", "Comparativa", "Prioridad", "Estado", "Avance físico", ...nums.map((r) => `Rel ${r}`), "Total pagado", "% Pagado", "Saldo a ejercer"]];
   for (const pa of calc.partidas) {
     pa.conceptos.forEach((c, i) => {
       const orig = c.base.presupuesto + c.base.iva;
       const porRel = nums.map((r) => p.pagos.filter((x) => x.estado === "pagado" && x.conceptoId === c.id && x.rel === r).reduce((s, x) => s + x.monto, 0) || "");
-      gen.push([i === 0 ? pa.nombre : "", c.nombre, nombreProv(c.proveedorId), c.presupuesto, c.iva, c.total, orig, c.total - orig || "", i === 0 ? pa.candadoEf : "", i === 0 ? pa.comparativa : "", PRIO[c.prioridad], ESTADOS[c.estado], ...porRel, c.pagado, c.total ? c.pagado / c.total : "", c.saldo]);
+      gen.push([i === 0 ? pa.nombre : "", c.nombre, nombreProv(c.proveedorId), c.precioUnitario > 0 ? c.cantidad : "", c.unidad, c.precioUnitario || "", c.presupuesto, c.iva, c.total, orig, c.total - orig || "", i === 0 ? pa.candadoEf : "", i === 0 ? pa.comparativa : "", PRIO[c.prioridad], ESTADOS[c.estado], c.avance ? c.avance / 100 : "", ...porRel, c.pagado, c.total ? c.pagado / c.total : "", c.saldo]);
     });
     gen.push([]);
   }
   const relTot = (f: (x: Proyecto["pagos"][number]) => boolean) => nums.map((r) => p.pagos.filter((x) => x.estado === "pagado" && x.rel === r && f(x)).reduce((s, x) => s + x.monto, 0));
-  gen.push(["TOTAL OBRA", "", "", "", "", calc.totalObra, "", "", p.meta.presupuestoObra, calc.comparativaGlobal, "", "", ...relTot((x) => x.tipo === "obra"), calc.pagadoObra, calc.totalObra ? calc.pagadoObra / calc.totalObra : "", calc.totalObra - calc.pagadoObra]);
-  gen.push([`Honorarios (${p.meta.pctHonorarios}%)`, "", "", "", "", calc.honorarios, "", "", "", "", "", "", ...relTot((x) => x.tipo === "honorarios"), calc.pagadoHonorarios, calc.honorarios ? calc.pagadoHonorarios / calc.honorarios : "", calc.honorarios - calc.pagadoHonorarios]);
-  gen.push(["GRAN TOTAL", "", "", "", "", calc.granTotal, "", "", "", "", "", "", ...relTot(() => true), calc.pagadoTotal, calc.granTotal ? calc.pagadoTotal / calc.granTotal : "", calc.granTotal - calc.pagadoTotal]);
+  const pad = ["", "", ""];
+  gen.push(["TOTAL OBRA", "", "", ...pad, "", "", calc.totalObra, calc.baseObra, calc.desviacionObra || "", p.meta.presupuestoObra, calc.comparativaGlobal, "", "", calc.conAvance ? calc.avanceFisicoObra / 100 : "", ...relTot((x) => x.tipo === "obra"), calc.pagadoObra, calc.totalObra ? calc.pagadoObra / calc.totalObra : "", calc.totalObra - calc.pagadoObra]);
+  gen.push([`Honorarios (${p.meta.pctHonorarios}%)`, "", "", ...pad, "", "", calc.honorarios, "", "", "", "", "", "", "", ...relTot((x) => x.tipo === "honorarios"), calc.pagadoHonorarios, calc.honorarios ? calc.pagadoHonorarios / calc.honorarios : "", calc.honorarios - calc.pagadoHonorarios]);
+  gen.push(["GRAN TOTAL", "", "", ...pad, "", "", calc.granTotal, "", "", "", "", "", "", "", ...relTot(() => true), calc.pagadoTotal, calc.granTotal ? calc.pagadoTotal / calc.granTotal : "", calc.granTotal - calc.pagadoTotal]);
 
   const reg: Fila[] = [["REGISTRO DE PAGOS"], [], ["No.", "Relación", "Concepto", "Proveedor", "Fecha", "Forma de pago", "Tipo", "Estado", "Monto", "De excedente", "Nota"]];
   [...p.pagos].sort((a, b) => a.rel - b.rel || (a.fecha || "").localeCompare(b.fecha || "")).forEach((x, i) => reg.push([i + 1, x.rel, x.tipo === "honorarios" ? `Honorarios - ${x.fase}` : conceptoDe(x.conceptoId)?.nombre || "", nombreProv(x.proveedorId), x.fecha, x.forma, x.status, FLUJO[x.estado], x.monto, x.deExcedente ? "Sí" : "", x.nota]));
@@ -54,9 +55,14 @@ export async function exportarExcel(p: Proyecto, calc: Calculo) {
   const bit: Fila[] = [["BITÁCORA DE PRESUPUESTOS"], [], ["Partida", "Concepto", "Fecha", "Anterior", "Nuevo", "Diferencia", "Motivo"]];
   for (const pa of p.partidas) for (const c of pa.conceptos) for (const a of c.ajustes) bit.push([pa.nombre, c.nombre, a.fecha, a.anterior, a.nuevo, a.nuevo - a.anterior, a.motivo]);
 
+  const lb: Fila[] = [["LÍNEA BASE CONTRA ACTUAL"], [], ["Partida", "Reserva", "Candado original", "Candado vigente", "Línea base", "Actual", "Desviación", "Avance físico", "% pagado"]];
+  for (const x of calc.partidas) lb.push([x.nombre, x.contingencia ? "Sí" : "", x.candado, x.candadoEf, x.baseTotal, x.comprometido, x.desviacion, x.conAvance ? x.avanceFisico / 100 : "", x.comprometido ? x.pagado / x.comprometido : ""]);
+  lb.push(["OBRA", "", calc.totalCandados, calc.totalCandados, calc.baseObra, calc.totalObra, calc.desviacionObra, calc.conAvance ? calc.avanceFisicoObra / 100 : "", calc.totalObra ? calc.pagadoObra / calc.totalObra : ""]);
+  if (calc.contingencia.hay) lb.push([], ["Reserva de imprevistos"], ["Original", calc.contingencia.candadoOriginal], ["Traspasada", calc.contingencia.usada], ["Disponible", calc.contingencia.disponible]);
+
   const wb = XLSX.utils.book_new();
   const hoja = (rows: Fila[], nombre: string) => XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), nombre);
-  hoja(gen, "General"); hoja(reg, "Registro de Pagos"); hoja(pv, "Proveedores"); hoja(co, "Compras"); hoja(fl, "Flujo de Caja"); hoja(tr, "Traspasos"); hoja(bit, "Bitácora");
+  hoja(gen, "General"); hoja(reg, "Registro de Pagos"); hoja(pv, "Proveedores"); hoja(co, "Compras"); hoja(lb, "Línea base"); hoja(fl, "Flujo de Caja"); hoja(tr, "Traspasos"); hoja(bit, "Bitácora");
   for (const r of rels) {
     const lista = p.pagos.filter((x) => x.rel === r.n);
     const rows: Fila[] = [[p.meta.clientes], [p.meta.nombre], [fecha(r.fecha)], [], [`Relación ${r.n} - Resumen de pagos`], [], ["No.", "Concepto", "Proveedor", "Pago solicitado", "Forma", "Tipo", "Estado", "Datos bancarios"]];

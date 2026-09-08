@@ -9,11 +9,11 @@ export const SECCIONES = [
   },
   {
     id: "candados", titulo: "2. Partidas y candados",
-    texto: `Una partida agrupa conceptos (un cuarto, la carpintería, las instalaciones). Su candado es el tope que decides no rebasar ahí. Reglas: la suma de candados no debe superar el presupuesto general; reserva una partida de imprevistos del 5 al 10 %; y cuando una partida crece, traspásale candado de otra en vez de subirlo, así queda registrado de dónde salió el dinero. La app avisa en ámbar a partir del ${Math.round(UMBRAL_AMBAR * 100)} % del candado y en rojo cuando se excede.`,
+    texto: `Una partida agrupa conceptos (un cuarto, la carpintería, las instalaciones). Su candado es el tope que decides no rebasar ahí. Reglas: la suma de candados no debe superar el presupuesto general; marca una partida como reserva de imprevistos, del 5 al 10 %, cuyo candado solo sale por traspaso; y cuando una partida crece, traspásale candado de otra en vez de subirlo, así queda registrado de dónde salió el dinero. La app avisa en ámbar a partir del ${Math.round(UMBRAL_AMBAR * 100)} % del candado y en rojo cuando se excede.`,
   },
   {
     id: "conceptos", titulo: "3. Conceptos",
-    texto: "Cada cosa que se compra o contrata. Captura presupuesto sin IVA e IVA aparte, el proveedor, y una prioridad: indispensable, flexible, opcional o exhibición. La prioridad te dice qué recortar si el dinero no alcanza. Cuando cambias un presupuesto, escribe el motivo: queda en la bitácora y explica la desviación al cliente.",
+    texto: "Cada cosa que se compra o contrata. Captúralo como cantidad × precio unitario siempre que puedas (m², piezas, metros lineales): así distingues si algo subió porque cambió el precio o porque creció el alcance. IVA aparte, proveedor, y una prioridad: indispensable, flexible, opcional o exhibición, que te dice qué recortar si el dinero no alcanza. El primer presupuesto de cada concepto queda como línea base; cuando lo cambias, escribe el motivo: la desviación contra la base y sus razones son lo que el cliente va a preguntar.",
   },
   {
     id: "pagos", titulo: "4. Pagos y relaciones",
@@ -25,7 +25,7 @@ export const SECCIONES = [
   },
   {
     id: "ritmo", titulo: "6. Ritmo de pagos",
-    texto: "Pagar mucho antes de tiempo es riesgo. La app compara el porcentaje pagado de cada partida contra el avance general de pagos de la obra y avisa cuando una partida va muy adelantada. Usa anticipo, parcialidades y finiquito ligados a entregas reales.",
+    texto: "Pagar mucho antes de tiempo es riesgo. Captura en cada concepto el avance físico real (0, 25, 50, 75, 100 %); la app lo compara contra el porcentaje pagado y avisa cuando llevas 25 puntos o más pagados por delante de lo hecho. Usa anticipo, parcialidades y finiquito ligados a entregas reales, y marca instalado cuando de verdad esté puesto.",
   },
 ];
 

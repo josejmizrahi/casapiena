@@ -8,6 +8,7 @@ const link = z.object({ id: idish.optional(), titulo: z.string().default(""), ur
 const concepto = z.object({
   id: idish, nombre: z.string(), proveedorId: z.string().default(""), presupuesto: z.number().default(0), iva: z.number().default(0),
   base: z.object({ presupuesto: z.number(), iva: z.number() }).optional(),
+  cantidad: z.number().default(1), unidad: z.string().default(""), precioUnitario: z.number().default(0), avance: z.number().min(0).max(100).default(0),
   estado: z.string().default("pendiente"), prioridad: z.string().default("sinClasificar"), logistica: z.string().default("porComprar"),
   pedido: z.string().default(""), eta: z.string().default(""), nota: z.string().default(""), links: z.array(link).default([]),
 });
@@ -18,7 +19,7 @@ const respaldo = z.object({
     direccionEfectivo: z.string().default(""), contactoEfectivo: z.string().default(""), instruccionesEfectivo: z.string().default(""),
   }),
   proveedores: z.array(z.object({ id: idish, nombre: z.string(), razon: z.string().default(""), banco: z.string().default(""), clabe: z.string().default(""), tel: z.string().default(""), nota: z.string().default("") })).default([]),
-  partidas: z.array(z.object({ id: idish, nombre: z.string(), candado: z.number().default(0), conceptos: z.array(concepto).default([]) })),
+  partidas: z.array(z.object({ id: idish, nombre: z.string(), candado: z.number().default(0), contingencia: z.boolean().default(false), conceptos: z.array(concepto).default([]) })),
   relaciones: z.array(z.object({ n: z.number(), fecha: z.string().default(""), fechaLimite: z.string().default("") })).default([]),
   traspasos: z.array(z.object({ deId: idish, aId: idish, monto: z.number(), fecha: z.string(), motivo: z.string().default("") })).default([]),
   pagos: z.array(z.object({
@@ -53,11 +54,12 @@ export async function importarProyecto(json: Respaldo, onProgreso?: (t: string) 
   let i = 0;
   for (const pa of json.partidas) {
     onProgreso?.(`Partida ${i + 1} de ${json.partidas.length}…`);
-    const r = ok<{ id: string }>(await supabase.from("partidas").insert({ proyecto_id: proy.id, nombre: pa.nombre, candado: pa.candado, orden: i++ }).select("id").single());
+    const r = ok<{ id: string }>(await supabase.from("partidas").insert({ proyecto_id: proy.id, nombre: pa.nombre, candado: pa.candado, contingencia: pa.contingencia, orden: i++ }).select("id").single());
     mapPart[pa.id] = r.id;
     const filas = pa.conceptos.map((c, j) => ({
       partida_id: r.id, nombre: c.nombre, proveedor_id: mapProv[c.proveedorId] || null, presupuesto: c.presupuesto, iva: c.iva,
       base_presupuesto: c.base?.presupuesto ?? c.presupuesto, base_iva: c.base?.iva ?? c.iva,
+      cantidad: c.cantidad, unidad: c.unidad, precio_unitario: c.precioUnitario, avance: c.avance,
       estado: c.estado, prioridad: c.prioridad, logistica: c.logistica, pedido: c.pedido, eta: c.eta || null, nota: c.nota, orden: j,
     }));
     if (!filas.length) continue;

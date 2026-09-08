@@ -13,8 +13,8 @@ const modo = process.argv[2] || "lleno";
 const lleno = modo === "lleno";
 
 // datos en forma de filas de la base, a partir del seed
-const partidas = seed.partidas.map((pa, i) => ({ id: `p${i}`.padEnd(36, "0"), proyecto_id: PID, nombre: pa.nombre, candado: i === 0 ? 250000 : 0, orden: i }));
-const conceptos = seed.partidas.flatMap((pa, i) => pa.conceptos.map((c, j) => ({ id: `c${i}-${j}`.padEnd(36, "0"), partida_id: partidas[i].id, nombre: c.nombre, proveedor_id: j === 0 ? PROV : null, presupuesto: j === 0 ? 50000 : 0, iva: j === 0 ? 8000 : 0, base_presupuesto: 50000, base_iva: 8000, estado: j === 0 ? "cerrado" : "pendiente", prioridad: c.prioridad, logistica: j === 0 ? "comprado" : "porComprar", pedido: "", eta: j === 0 ? "2026-01-15" : null, nota: "", orden: j })));
+const partidas = seed.partidas.map((pa, i) => ({ id: `p${i}`.padEnd(36, "0"), proyecto_id: PID, nombre: pa.nombre, candado: i === 0 ? 250000 : i === 7 ? 40000 : 0, orden: i, contingencia: i === 7 }));
+const conceptos = seed.partidas.flatMap((pa, i) => pa.conceptos.map((c, j) => ({ id: `c${i}-${j}`.padEnd(36, "0"), partida_id: partidas[i].id, nombre: c.nombre, proveedor_id: j === 0 ? PROV : null, presupuesto: j === 0 ? 50000 : 0, iva: j === 0 ? 8000 : 0, base_presupuesto: j === 0 ? 40000 : 0, base_iva: j === 0 ? 6400 : 0, cantidad: j === 0 ? 2 : 1, unidad: j === 0 ? "pza" : "", precio_unitario: j === 0 ? 25000 : 0, avance: j === 0 && i === 0 ? 25 : 0, estado: j === 0 ? "cerrado" : "pendiente", prioridad: c.prioridad, logistica: j === 0 ? "comprado" : "porComprar", pedido: "", eta: j === 0 ? "2026-01-15" : null, nota: "", orden: j })));
 const proyecto = { id: PID, nombre: "Casa Piena", clientes: "Familia M.", presupuesto_obra: 1500000, pct_honorarios: 15, direccion_efectivo: "Calle 1", contacto_efectivo: "Ana", instrucciones_efectivo: "", owner_id: UID, archivado: false, created_at: "2026-01-01T00:00:00Z" };
 const tablas = {
   proveedores: [{ id: PROV, proyecto_id: PID, nombre: "Muebles SA", razon: "Muebles SA de CV", banco: "BBVA", clabe: "0123", tel: "", nota: "" }],
@@ -102,11 +102,20 @@ for (const [nombre, viewport] of [["movil", { width: 420, height: 860 }], ["escr
     for (const ruta of ["compras", "pagos", "relaciones", "resumen", "proveedores", "ajustes", "obra", "hoy", "obra"]) await paso(`vista ${ruta}`, async () => { await ir(ruta); await page.waitForURL(`**/#/p/${PID}/${ruta}`); await page.waitForTimeout(400); if (process.env.SHOT) await page.screenshot({ path: `${process.env.SHOT}-${nombre}-${ruta}.png`, fullPage: true }); });
     if (lleno) {
       await paso("obra: abrir partida", async () => { await page.click(`button:has-text("${seed.partidas[0].nombre}")`); await page.waitForSelector(`text=${seed.partidas[0].conceptos[0].nombre}`); });
-      await paso("obra: diálogo concepto", async () => { await page.click(`button:has-text("${seed.partidas[0].conceptos[0].nombre}")`); await dialogo(); });
+      await paso("obra: diálogo concepto (PU y avance)", async () => {
+        await page.click(`button:has-text("${seed.partidas[0].conceptos[0].nombre}")`);
+        await page.waitForSelector("[role=dialog]");
+        await page.waitForSelector("text=Precio unitario");
+        await page.click("[role=dialog] button:has-text('75%')");
+        await page.waitForSelector("text=Línea base");
+        await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" });
+      });
       await paso("obra: + concepto", async () => { await page.click("button:has-text('Concepto') >> nth=0"); await dialogo(); });
       await paso("obra: candado", async () => { await page.click("button:has-text('$240,000')"); await dialogo(); });
     }
     await paso("obra: + partida", async () => { await page.click("main button:has-text('Partida')"); await dialogo(); });
+    if (lleno) await paso("resumen: línea base, reserva y avance", async () => { await ir("resumen"); await page.waitForSelector("text=Línea base contra actual"); await page.waitForSelector("text=Reserva de imprevistos"); await page.waitForSelector("text=Avance físico contra pagado"); });
+
     await paso("botón + Pago", async () => { await page.click("button:has-text('Pago') >> nth=-1"); await dialogo(); });
     if (lleno) {
       await paso("pagos: abrir pago", async () => { await ir("pagos"); await page.click("button:has-text('Honorarios · 1')"); await dialogo(); });

@@ -5,7 +5,7 @@ import type { ConceptoForm, PagoForm } from "@/api";
 // Un solo lugar abre los diálogos del proyecto, desde cualquier vista.
 export type Modal =
   | { tipo: "concepto"; d: ConceptoForm }
-  | { tipo: "partida"; d: { id?: string; nombre: string; candado: number } }
+  | { tipo: "partida"; d: { id?: string; nombre: string; candado: number; contingencia?: boolean } }
   | { tipo: "traspaso"; d: { deId: string; aId: string; monto: number; fecha: string; motivo: string } }
   | { tipo: "pago"; d: Partial<PagoForm> }
   | { tipo: "rel"; d: { nOriginal?: number; n: number; fecha: string; fechaLimite: string } }
@@ -27,6 +27,7 @@ export const useModal = () => {
 
 export const conceptoNuevo = (partidaId: string): ConceptoForm => ({
   partidaId, nombre: "", proveedorId: "", presupuesto: 0, iva: 0, base: { presupuesto: 0, iva: 0 }, ajustes: [],
+  cantidad: 1, unidad: "", precioUnitario: 0, avance: 0,
   estado: "pendiente", prioridad: "sinClasificar", logistica: "porComprar", pedido: "", eta: "", nota: "", links: [],
 });
 export const conceptoForm = (c: Concepto): ConceptoForm => ({ ...c });

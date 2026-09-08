@@ -10,8 +10,9 @@ import { Input, NativeSelect } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { MoneyInput } from "@/components/ui/money-input";
 import { KV } from "@/components/ui/misc";
+import { Checkbox } from "@/components/ui/checkbox";
 
-export function PartidaDialog({ d0 }: { d0: { id?: string; nombre: string; candado: number } }) {
+export function PartidaDialog({ d0 }: { d0: { id?: string; nombre: string; candado: number; contingencia?: boolean } }) {
   const { p, calc, accion } = useProyecto();
   const { abrir, cerrar } = useModal();
   const [d, setD] = useState(d0);
@@ -26,6 +27,10 @@ export function PartidaDialog({ d0 }: { d0: { id?: string; nombre: string; canda
         <Field label="Nombre de la partida"><Input autoFocus={!d.id} value={d.nombre} onChange={(e) => setD({ ...d, nombre: e.target.value })} /></Field>
         <Field label="Candado original" hint="El máximo que quieres gastar aquí. Si una partida se pasa, traspásale candado de otra en vez de subirlo: así queda registrado de dónde salió."><MoneyInput value={d.candado} onChange={(v) => setD({ ...d, candado: v })} /></Field>
         <button type="button" className="text-xs text-info inline-flex items-center gap-1 hover:underline" onClick={() => abrir({ tipo: "guia", seccion: "candados" })}><BookOpen className="size-3.5" />¿Qué es un candado y cómo se reparte?</button>
+        <div className="rounded-xl border bg-muted/60 px-3 py-2.5">
+          <Checkbox label="Esta partida es la reserva de imprevistos" checked={!!d.contingencia} onCheckedChange={(v) => setD({ ...d, contingencia: !!v })} />
+          <p className="text-xs text-muted-foreground mt-1.5 pl-7">Su candado no se gasta directo: se traspasa a la partida que creció. Así ves cuánto colchón te queda y en qué se fue.</p>
+        </div>
         {pa && (pa.recibido > 0 || pa.cedido > 0) && (
           <div className="rounded-xl border bg-muted/60 px-3 py-1">
             <KV k="Candado original" v={fm(pa.candado)} />

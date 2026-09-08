@@ -3,8 +3,8 @@ import { Plus, X } from "lucide-react";
 import { useProyecto } from "@/hooks/useProyecto";
 import { useModal, pagoDesde } from "@/hooks/useModal";
 import * as api from "@/api";
-import { ESTADOS, LOG, LOG_ORDEN, PRIO, PRIO_ORDEN, type EstadoPresupuesto, type Logistica, type Prioridad } from "@/lib/types";
-import { HOY, fecha, fm, fm2, pct, uid } from "@/lib/utils";
+import { ESTADOS, LOG, LOG_ORDEN, PRIO, PRIO_ORDEN, UNIDADES, DESFASE_AVISO, type EstadoPresupuesto, type Logistica, type Prioridad } from "@/lib/types";
+import { HOY, fecha, fm, fm2, num, pct, uid } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogActions, DialogContent } from "@/components/ui/dialog";
 import { Input, NativeSelect } from "@/components/ui/input";
@@ -21,6 +21,12 @@ export function ConceptoDialog({ d0 }: { d0: api.ConceptoForm }) {
   const { abrir, cerrar } = useModal();
   const [d, setD] = useState(d0);
   const [ivaAuto, setIvaAuto] = useState(false);
+  const [porUnitario, setPorUnitario] = useState(d0.precioUnitario > 0);
+  const ponPresupuesto = (v: number) => { set("presupuesto", v); if (ivaAuto) set("iva", Math.round(v * 16) / 100); };
+  const setUnitario = (cantidad: number, precioUnitario: number) => {
+    setD((x) => ({ ...x, cantidad, precioUnitario }));
+    ponPresupuesto(Math.round(cantidad * precioUnitario * 100) / 100);
+  };
   const [motivo, setMotivo] = useState("");
   const set = <K extends keyof api.ConceptoForm>(k: K, v: api.ConceptoForm[K]) => setD((x) => ({ ...x, [k]: v }));
 
@@ -49,11 +55,21 @@ export function ConceptoDialog({ d0 }: { d0: api.ConceptoForm }) {
       <DialogContent title={d.id ? "Concepto" : "Nuevo concepto"} description={pa?.nombre}>
         <Field label="Concepto"><Input autoFocus={!d.id} value={d.nombre} onChange={(e) => set("nombre", e.target.value)} /></Field>
         <Field label="Proveedor"><SelectProveedor value={d.proveedorId} onChange={(v) => set("proveedorId", v)} /></Field>
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          <Checkbox label="Por cantidad × precio unitario" checked={porUnitario} onCheckedChange={(v) => { setPorUnitario(!!v); if (!v) setD((x) => ({ ...x, precioUnitario: 0 })); }} />
+          <Checkbox label="IVA 16% automático" checked={ivaAuto} onCheckedChange={(v) => { setIvaAuto(!!v); if (v) set("iva", Math.round(d.presupuesto * 16) / 100); }} />
+        </div>
+        {porUnitario ? (
+          <div className="grid grid-cols-[1fr_1fr_1.4fr] gap-2">
+            <Field label="Cantidad"><Input inputMode="decimal" className="num" value={d.cantidad} onChange={(e) => setUnitario(num(e.target.value), d.precioUnitario)} /></Field>
+            <Field label="Unidad"><NativeSelect value={d.unidad} onChange={(e) => set("unidad", e.target.value)}><option value="">—</option>{UNIDADES.map((u) => <option key={u}>{u}</option>)}</NativeSelect></Field>
+            <Field label="Precio unitario (sin IVA)"><MoneyInput value={d.precioUnitario} onChange={(v) => setUnitario(d.cantidad || 1, v)} /></Field>
+          </div>
+        ) : null}
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Presupuesto (sin IVA)"><MoneyInput value={d.presupuesto} onChange={(v) => { set("presupuesto", v); if (ivaAuto) set("iva", Math.round(v * 16) / 100); }} /></Field>
+          <Field label={porUnitario ? "Subtotal (cantidad × PU)" : "Presupuesto (sin IVA)"}>{porUnitario ? <Input readOnly className="num" value={fm2(d.presupuesto)} /> : <MoneyInput value={d.presupuesto} onChange={ponPresupuesto} />}</Field>
           <Field label="IVA"><MoneyInput value={d.iva} onChange={(v) => set("iva", v)} /></Field>
         </div>
-        <Checkbox label="Calcular IVA 16% automático" checked={ivaAuto} onCheckedChange={(v) => { setIvaAuto(!!v); if (v) set("iva", Math.round(d.presupuesto * 16) / 100); }} />
         {cambio && <Field label="Motivo del cambio (queda en la bitácora)"><Input autoFocus value={motivo} placeholder="Ej. aditiva por cambio de acabado" onChange={(e) => setMotivo(e.target.value)} /></Field>}
         <div className="grid grid-cols-2 gap-3">
           <Field label="Prioridad"><NativeSelect value={d.prioridad} onChange={(e) => set("prioridad", e.target.value as Prioridad)}>{PRIO_ORDEN.map((k) => <option key={k} value={k}>{PRIO[k]}</option>)}</NativeSelect></Field>
@@ -67,6 +83,12 @@ export function ConceptoDialog({ d0 }: { d0: api.ConceptoForm }) {
           <Field label="Llega el"><Input type="date" value={d.eta || ""} onChange={(e) => set("eta", e.target.value)} /></Field>
         </div>
         <Field label="No. de pedido / guía"><Input value={d.pedido} onChange={(e) => set("pedido", e.target.value)} /></Field>
+        <Field label="Avance físico real" hint="Lo que de verdad está hecho o instalado. Se compara contra lo pagado para avisarte si vas pagando por adelantado.">
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1">{[0, 25, 50, 75, 100].map((v) => <Button key={v} type="button" size="sm" variant={d.avance === v ? "default" : "outline"} className="px-2.5" onClick={() => set("avance", v)}>{v}%</Button>)}</div>
+            <div className="relative w-20 ml-auto"><Input inputMode="numeric" className="num pr-6 text-right" value={d.avance} onChange={(e) => set("avance", Math.max(0, Math.min(100, num(e.target.value))))} /><span className="absolute right-2 top-2.5 text-xs text-muted-foreground">%</span></div>
+          </div>
+        </Field>
         <Field label="Links (tienda, cotización, seguimiento)">
           <div className="space-y-2">
             {d.links.map((l) => (
@@ -86,6 +108,8 @@ export function ConceptoDialog({ d0 }: { d0: api.ConceptoForm }) {
           {pa && pa.candadoEf > 0 && <KV k={excede ? "Excede el candado por" : "Quedaría disponible"} v={fm(Math.abs(pa.candadoEf - otros - total))} tone={excede ? "bad" : "ok"} />}
           {d.id && <KV k="Pagado" v={<>{fm2(pagado)} <span className="text-muted-foreground font-normal">({pct(pagado, total)}%)</span></>} />}
           {d.id && <KV k="Saldo a ejercer" v={fm2(total - pagado)} />}
+          {d.id && c && Math.abs(c.desviacion) > 0.005 && <KV k={`Línea base ${fm2(c.baseTotal)} · desviación`} v={`${c.desviacion > 0 ? "+" : ""}${fm2(c.desviacion)}`} tone={c.desviacion > 0 ? "bad" : "ok"} />}
+          {d.id && d.avance > 0 && total > 0 && <KV k={`Avance físico ${d.avance}% · pagado ${pct(pagado, total)}%`} v={pct(pagado, total) - d.avance >= DESFASE_AVISO ? "Pagado por adelantado" : "En ritmo"} tone={pct(pagado, total) - d.avance >= DESFASE_AVISO ? "warn" : "ok"} />}
         </div>
         {d.id && ajustes.length > 0 && (
           <div>
