@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { Component, useState, useEffect, useCallback } from "react";
 import { supabase } from "./lib/supabase.js";
 import * as api from "./lib/api.js";
 import Tracker from "./Tracker.jsx";
@@ -11,6 +11,26 @@ const shell = {
 const caja = { background: "#fff", border: "1px solid #D7DDD9", borderRadius: 14, padding: 22, width: "100%", maxWidth: 380 };
 const input = { width: "100%", border: "1px solid #D7DDD9", borderRadius: 9, padding: 11, fontSize: 16, background: "#FAFBFA", boxSizing: "border-box" };
 const boton = { width: "100%", border: 0, background: "#1E2F3C", color: "#fff", borderRadius: 9, padding: 12, fontSize: 15, fontWeight: 700, marginTop: 10 };
+
+// Si algo truena al renderizar, muestra el error en vez de dejar la pantalla en blanco.
+class Guardia extends Component {
+  state = { error: null };
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error, info) { console.error("Error de interfaz:", error, info?.componentStack); }
+  render() {
+    if (!this.state.error) return this.props.children;
+    return (
+      <div style={shell}>
+        <div style={caja}>
+          <h1 style={{ fontFamily: '"Iowan Old Style",Palatino,Georgia,serif', fontSize: 22, margin: "0 0 8px" }}>Algo falló</h1>
+          <p style={{ fontSize: 14, color: "#5B6B75" }}>La pantalla no se pudo mostrar. Recarga la página; si sigue igual, comparte este mensaje:</p>
+          <pre style={{ fontSize: 12, whiteSpace: "pre-wrap", background: "#FAFBFA", border: "1px solid #D7DDD9", borderRadius: 9, padding: 10 }}>{String(this.state.error?.message || this.state.error)}</pre>
+          <button style={boton} onClick={() => { localStorage.removeItem("obra:proyecto"); location.reload(); }}>Volver a mis proyectos</button>
+        </div>
+      </div>
+    );
+  }
+}
 
 function Entrar() {
   const [correo, setCorreo] = useState("");
@@ -120,6 +140,6 @@ export default function App() {
 
   if (sesion === undefined) return <div style={shell}><span style={{ color: "#5B6B75" }}>Cargando…</span></div>;
   if (!sesion) return <Entrar />;
-  if (!proyectoId) return <Proyectos onAbrir={abrir} onSalir={salir} />;
-  return <Tracker proyectoId={proyectoId} onCambiarProyecto={cerrarProyecto} onSalir={salir} />;
+  if (!proyectoId) return <Guardia><Proyectos onAbrir={abrir} onSalir={salir} /></Guardia>;
+  return <Guardia key={proyectoId}><Tracker proyectoId={proyectoId} onCambiarProyecto={cerrarProyecto} onSalir={salir} /></Guardia>;
 }
