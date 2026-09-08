@@ -9,7 +9,7 @@ export default [
   { ignores: ["dist/**", "node_modules/**"] },
   js.configs.recommended,
   {
-    files: ["**/*.{js,jsx}"],
+    files: ["**/*.{js,mjs,jsx}"],
     plugins: { react, "react-hooks": reactHooks },
     languageOptions: {
       ecmaVersion: 2023, sourceType: "module",
