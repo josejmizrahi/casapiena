@@ -241,7 +241,9 @@ language sql stable security definer set search_path = public as $$
                  where proyecto_id = p and user_id = auth.uid() and rol in ('propietario','editor'));
 $$;
 
-create policy p_ver on proyectos for select using (puede_ver(id));
+-- owner_id directo además de puede_ver(): puede_ver es STABLE y no ve la fila nueva
+-- dentro de un INSERT ... RETURNING, lo que rompía la creación de proyectos.
+create policy p_ver on proyectos for select using (owner_id = auth.uid() or puede_ver(id));
 create policy p_ins on proyectos for insert with check (owner_id = auth.uid());
 create policy p_upd on proyectos for update using (puede_editar(id));
 create policy p_del on proyectos for delete using (owner_id = auth.uid());
