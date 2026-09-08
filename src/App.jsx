@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "./lib/supabase.js";
+import { supabase, APP_URL } from "./lib/supabase.js";
 import * as api from "./lib/api.js";
 import Tracker from "./Tracker.jsx";
 
@@ -19,7 +19,7 @@ function Entrar() {
   const [cargando, setCargando] = useState(false);
   const enviar = async () => {
     setErr(""); setCargando(true);
-    const { error } = await supabase.auth.signInWithOtp({ email: correo.trim(), options: { emailRedirectTo: window.location.origin } });
+    const { error } = await supabase.auth.signInWithOtp({ email: correo.trim(), options: { emailRedirectTo: APP_URL } });
     setCargando(false);
     if (error) setErr(error.message); else setEnviado(true);
   };
@@ -28,7 +28,7 @@ function Entrar() {
       <div style={caja}>
         <h1 style={{ fontFamily: '"Iowan Old Style",Palatino,Georgia,serif', fontSize: 24, margin: "0 0 4px" }}>Control de obra</h1>
         {enviado ? (
-          <p style={{ fontSize: 14, color: "#5B6B75" }}>Te mandé un link a <b>{correo}</b>. Ábrelo desde este mismo dispositivo y entras directo.</p>
+          <p style={{ fontSize: 14, color: "#5B6B75" }}>Te mandé un link a <b>{correo}</b>. Ábrelo y entras directo.</p>
         ) : (
           <>
             <p style={{ fontSize: 14, color: "#5B6B75", margin: "0 0 14px" }}>Escribe tu correo y te mando un link para entrar. Sin contraseña.</p>
