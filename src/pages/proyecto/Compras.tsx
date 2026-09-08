@@ -53,18 +53,18 @@ export default function Compras() {
               <div className="flex items-start justify-between gap-2">
                 <button type="button" className="min-w-0 text-left" onClick={() => abrir({ tipo: "concepto", d: conceptoForm(c) })}>
                   <div className="font-medium truncate">{c.nombre}</div>
-                  <div className="text-xs text-muted-foreground truncate">{c.partidaNombre}{nombreProv(c.proveedorId) ? ` · ${nombreProv(c.proveedorId)}` : ""}</div>
+                  <div className="text-xs text-ink-3 truncate">{c.partidaNombre}{nombreProv(c.proveedorId) ? ` · ${nombreProv(c.proveedorId)}` : ""}</div>
                 </button>
                 <LogBadge l={c.logistica} />
               </div>
-              <div className="flex justify-between text-xs text-muted-foreground num">
+              <div className="flex justify-between text-xs text-ink-3 num">
                 <span>{c.total ? fm(c.total) : "Sin presupuesto"}{c.total > 0 ? ` · pagado ${c.pctPagado}%` : ""}</span>
                 {c.eta && <span className={tarde ? "text-bad font-medium" : ""}>{tarde ? "Debió llegar " : "Llega "}{fecha(c.eta)}</span>}
               </div>
-              {c.pedido && <div className="text-xs text-muted-foreground num">Pedido / guía: {c.pedido}</div>}
+              {c.pedido && <div className="text-xs text-ink-3 num">Pedido / guía: {c.pedido}</div>}
               {c.links.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
-                  {c.links.map((l) => <a key={l.id} href={l.url} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 rounded-md bg-info-bg text-info px-2 py-1 text-xs font-semibold max-w-full truncate"><ExternalLink className="size-3 shrink-0" />{l.titulo || hostDe(l.url)}</a>)}
+                  {c.links.map((l) => <a key={l.id} href={l.url} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1 border border-border-2 rounded-sm px-2 py-1 text-[12px] text-foreground max-w-full truncate hover:bg-muted"><ExternalLink className="size-3 shrink-0" />{l.titulo || hostDe(l.url)}</a>)}
                 </div>
               )}
               <div className="flex gap-2 pt-1">

@@ -48,9 +48,9 @@ export default function Pagos() {
                   <Row onClick={() => abrir({ tipo: "pago", d: pagoDesde(x) })}
                     left={<>
                       <div className="text-sm font-medium truncate">{x.tipo === "honorarios" ? `Honorarios · ${x.fase}` : conceptoDe(x.conceptoId)?.nombre || "Concepto eliminado"}</div>
-                      <div className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">{nombreProv(x.proveedorId) && <span>{nombreProv(x.proveedorId)} ·</span>}<span>{fecha(x.fecha)}</span><FormaBadge f={x.forma} /><FlujoBadge e={x.estado} />{x.deExcedente && <span>· de excedente</span>}</div>
+                      <div className="text-xs text-ink-3 flex items-center gap-1.5 flex-wrap">{nombreProv(x.proveedorId) && <span>{nombreProv(x.proveedorId)} ·</span>}<span>{fecha(x.fecha)}</span><FormaBadge f={x.forma} /><FlujoBadge e={x.estado} />{x.deExcedente && <span>· de excedente</span>}</div>
                     </>}
-                    right={<><div className="text-sm font-semibold">{fm(x.monto)}</div><div className="text-[11px] text-muted-foreground">{x.status}</div></>}
+                    right={<><div className="text-sm font-semibold">{fm(x.monto)}</div><div className="text-[11px] text-ink-3">{x.status}</div></>}
                   />
                   {x.estado !== "pagado" && (
                     <div className="flex gap-2 pb-2">
@@ -70,7 +70,7 @@ export default function Pagos() {
           <span className={"text-sm font-semibold num " + (calc.excedenteDiferencia < 0 ? "text-bad" : "text-ok")}>{fm(calc.excedenteDiferencia)}</span>
         </CardHeader>
         <CardContent>
-          {p.excedentes.map((e) => <Row key={e.id} onClick={() => abrir({ tipo: "exc", d: e })} left={<><div className="text-sm font-medium">{e.concepto}</div><div className="text-xs text-muted-foreground">{fecha(e.fecha)}</div></>} right={<div className="text-sm font-semibold">{fm(e.monto)}</div>} />)}
+          {p.excedentes.map((e) => <Row key={e.id} onClick={() => abrir({ tipo: "exc", d: e })} left={<><div className="text-sm font-medium">{e.concepto}</div><div className="text-xs text-ink-3">{fecha(e.fecha)}</div></>} right={<div className="text-sm font-semibold">{fm(e.monto)}</div>} />)}
           <KV k="Usado en pagos" v={fm(calc.excedenteUsado)} className="mt-1" />
           <Button variant="dashed" className="mt-2" onClick={() => abrir({ tipo: "exc", d: { concepto: "", fecha: HOY(), monto: 0 } })}><Plus />Excedente a favor</Button>
         </CardContent>

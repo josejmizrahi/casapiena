@@ -8,7 +8,6 @@ import { supabase } from "@/lib/supabase";
 import { importarProyecto, validarRespaldo } from "@/lib/importar";
 import { fm, fecha } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/label";
 import { Dialog, DialogActions, DialogContent } from "@/components/ui/dialog";
@@ -48,19 +47,20 @@ export default function Proyectos() {
   const yo = sesion?.user.id;
   return (
     <div className="min-h-dvh">
-      <header className="border-b border-border bg-card">
-        <div className="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-lg font-semibold leading-tight">Mis proyectos</h1>
-            <p className="text-xs text-muted-foreground">{sesion?.user.email}</p>
+      <header className="border-b border-border-2" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+        <div className="mx-auto max-w-5xl px-4 md:px-8 py-4 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="anno truncate">{sesion?.user.email}</div>
+            <h1 className="text-[22px] font-semibold leading-tight mt-1">Proyectos</h1>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => file.current?.click()} disabled={!!progreso}><Upload />{progreso || "Importar respaldo"}</Button>
+            <Button variant="outline" size="sm" className="hidden sm:inline-flex" onClick={() => file.current?.click()} disabled={!!progreso}><Upload />{progreso || "Importar"}</Button>
             <input ref={file} type="file" accept="application/json" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) importar(f); e.target.value = ""; }} />
-            <Button size="sm" onClick={() => setNuevo(true)}><Plus />Nuevo proyecto</Button>
+            <Button size="sm" onClick={() => setNuevo(true)}><Plus />Nuevo</Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Más"><MoreHorizontal /></Button></DropdownMenuTrigger>
               <DropdownMenuContent>
+                <DropdownMenuItem className="sm:hidden" onSelect={() => file.current?.click()}><Upload />Importar respaldo</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => setPass(true)}><KeyRound />Cambiar contraseña</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => supabase.auth.signOut()}><LogOut />Cerrar sesión</DropdownMenuItem>
               </DropdownMenuContent>
@@ -68,20 +68,20 @@ export default function Proyectos() {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-5 space-y-4">
+      <main className="mx-auto max-w-5xl px-4 md:px-8 py-5 space-y-5">
         <Segmented value={vista} onChange={setVista} options={[["activos", "Activos"], ["archivados", "Archivados"]]} />
-        {isLoading && <p className="text-sm text-muted-foreground">Cargando…</p>}
+        {isLoading && <p className="text-sm text-ink-3">Cargando…</p>}
         {error && <p className="text-sm text-bad">{(error as Error).message}</p>}
         {!isLoading && lista.length === 0 && (
           <Empty>{vista === "activos" ? "Todavía no tienes proyectos. Crea uno o importa un respaldo JSON." : "No hay proyectos archivados."}</Empty>
         )}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3">
           {lista.map((x) => (
-            <Card key={x.id} className="p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
+            <article key={x.id} className="border-t border-border-2 pt-3 pb-4 flex flex-col gap-3">
               <div className="flex items-start justify-between gap-2">
                 <Link to={`/p/${x.id}`} className="min-w-0">
-                  <div className="font-semibold truncate">{x.nombre}</div>
-                  <div className="text-xs text-muted-foreground truncate">{x.clientes || "Sin clientes"}</div>
+                  <div className="text-[17px] font-semibold truncate">{x.nombre}</div>
+                  <div className="text-[13px] text-ink-2 truncate">{x.clientes || "Sin clientes"}</div>
                 </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="-mr-2 -mt-1" aria-label="Opciones"><MoreHorizontal /></Button></DropdownMenuTrigger>
@@ -91,15 +91,15 @@ export default function Proyectos() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span className="num">{x.presupuesto_obra > 0 ? `Presupuesto ${fm(x.presupuesto_obra)}` : "Sin presupuesto"}</span>
+              <div className="flex items-center justify-between anno">
+                <span>{x.presupuesto_obra > 0 ? fm(x.presupuesto_obra) : "Sin presupuesto"}</span>
                 <span>{fecha(x.created_at.slice(0, 10))}</span>
               </div>
               <div className="flex items-center justify-between">
                 {x.owner_id === yo ? <Badge variant="neutral">Propietario</Badge> : <Badge variant="info">Compartido</Badge>}
-                <Button asChild variant="secondary" size="sm"><Link to={`/p/${x.id}`}><FolderOpen />Abrir</Link></Button>
+                <Button asChild variant="outline" size="sm"><Link to={`/p/${x.id}`}><FolderOpen />Abrir</Link></Button>
               </div>
-            </Card>
+            </article>
           ))}
         </div>
       </main>

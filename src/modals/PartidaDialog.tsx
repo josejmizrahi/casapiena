@@ -27,19 +27,19 @@ export function PartidaDialog({ d0 }: { d0: { id?: string; nombre: string; canda
         <Field label="Nombre de la partida"><Input autoFocus={!d.id} value={d.nombre} onChange={(e) => setD({ ...d, nombre: e.target.value })} /></Field>
         <Field label="Candado original" hint="El máximo que quieres gastar aquí. Si una partida se pasa, traspásale candado de otra en vez de subirlo: así queda registrado de dónde salió."><MoneyInput value={d.candado} onChange={(v) => setD({ ...d, candado: v })} /></Field>
         <button type="button" className="text-xs text-info inline-flex items-center gap-1 hover:underline" onClick={() => abrir({ tipo: "guia", seccion: "candados" })}><BookOpen className="size-3.5" />¿Qué es un candado y cómo se reparte?</button>
-        <div className="rounded-xl border bg-muted/60 px-3 py-2.5">
+        <div className="rounded-md border bg-panel border-border px-3 py-2.5">
           <Checkbox label="Esta partida es la reserva de imprevistos" checked={!!d.contingencia} onCheckedChange={(v) => setD({ ...d, contingencia: !!v })} />
-          <p className="text-xs text-muted-foreground mt-1.5 pl-7">Su candado no se gasta directo: se traspasa a la partida que creció. Así ves cuánto colchón te queda y en qué se fue.</p>
+          <p className="text-xs text-ink-3 mt-1.5 pl-7">Su candado no se gasta directo: se traspasa a la partida que creció. Así ves cuánto colchón te queda y en qué se fue.</p>
         </div>
         {pa && (pa.recibido > 0 || pa.cedido > 0) && (
-          <div className="rounded-xl border bg-muted/60 px-3 py-1">
+          <div className="rounded-md border bg-panel border-border px-3 py-1">
             <KV k="Candado original" v={fm(pa.candado)} />
             {pa.recibido > 0 && <KV k="Recibido en traspasos" v={`+${fm(pa.recibido)}`} tone="ok" />}
             {pa.cedido > 0 && <KV k="Cedido a otras partidas" v={`−${fm(pa.cedido)}`} tone="bad" />}
             <KV k="Candado vigente" v={fm(pa.candadoEf)} bold />
           </div>
         )}
-        {traspasos.length > 0 && <div className="space-y-1 border-l-2 border-border pl-3 text-xs text-muted-foreground num">{traspasos.map((t) => <div key={t.id}>{fecha(t.fecha)}: {fm(t.monto)} {t.deId === d.id ? `→ ${nombreP(t.aId)}` : `← ${nombreP(t.deId)}`}{t.motivo ? ` · ${t.motivo}` : ""}</div>)}</div>}
+        {traspasos.length > 0 && <div className="space-y-1 border-l-2 border-border pl-3 text-xs text-ink-3 num">{traspasos.map((t) => <div key={t.id}>{fecha(t.fecha)}: {fm(t.monto)} {t.deId === d.id ? `→ ${nombreP(t.aId)}` : `← ${nombreP(t.deId)}`}{t.motivo ? ` · ${t.motivo}` : ""}</div>)}</div>}
         {d.id && <Button variant="dashed" onClick={() => abrir({ tipo: "traspaso", d: { aId: d.id!, deId: "", monto: 0, motivo: "", fecha: HOY() } })}><ArrowLeftRight />Traspasar candado de otra partida</Button>}
         <DialogActions>
           {d.id && <Button variant="destructive" onClick={borrar}>Borrar</Button>}
@@ -75,7 +75,7 @@ export function TraspasoDialog({ d0 }: { d0: { deId: string; aId: string; monto:
         </div>
         <Field label="Motivo"><Input value={d.motivo} placeholder="Ej. carpintería creció, jardinería no se ejecutó" onChange={(e) => setD({ ...d, motivo: e.target.value })} /></Field>
         {origen && (
-          <div className={cn("rounded-xl border px-3 py-1", dejaCorto ? "bg-bad-bg border-bad/30" : "bg-muted/60")}>
+          <div className={cn("rounded-md border px-3 py-1", dejaCorto ? "bg-bad-bg border-bad/30" : "bg-panel border-border")}>
             <KV k={`${origen.nombre} quedaría en`} v={fm(origen.candadoEf - d.monto)} />
             <KV k="y tiene comprometido" v={fm(origen.comprometido)} tone={dejaCorto ? "bad" : undefined} />
             {destino && <KV k={`${destino.nombre} quedaría en`} v={fm(destino.candadoEf + d.monto)} />}

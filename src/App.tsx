@@ -28,9 +28,9 @@ class Guardia extends Component<{ children: ReactNode }, { error: Error | null }
     if (!this.state.error) return this.props.children;
     return (
       <div className="min-h-dvh flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-xl border border-border bg-card p-6 space-y-3">
+        <div className="max-w-md w-full rounded-md border border-border bg-card p-6 space-y-3">
           <h1 className="text-lg font-semibold">Algo falló</h1>
-          <p className="text-sm text-muted-foreground">La pantalla no se pudo mostrar. Recarga la página; si sigue igual, comparte este mensaje:</p>
+          <p className="text-sm text-ink-3">La pantalla no se pudo mostrar. Recarga la página; si sigue igual, comparte este mensaje:</p>
           <pre className="text-xs whitespace-pre-wrap rounded-md bg-muted p-3">{this.state.error.message}</pre>
           <Button className="w-full" onClick={() => { location.hash = "#/"; location.reload(); }}>Volver a mis proyectos</Button>
         </div>
@@ -41,7 +41,7 @@ class Guardia extends Component<{ children: ReactNode }, { error: Error | null }
 
 function Rutas() {
   const sesion = useSesion();
-  if (sesion === undefined) return <div className="min-h-dvh flex items-center justify-center text-sm text-muted-foreground">Cargando…</div>;
+  if (sesion === undefined) return <div className="min-h-dvh flex items-center justify-center text-sm text-ink-3">Cargando…</div>;
   if (!sesion) return <Login />;
   return (
     <Routes>

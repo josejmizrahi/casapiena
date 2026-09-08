@@ -39,7 +39,7 @@ export default function ProyectoLayout() {
 }
 
 const Pantalla = ({ children }: { children: React.ReactNode }) => (
-  <div className="min-h-dvh flex flex-col items-center justify-center gap-3 p-6 text-sm text-muted-foreground">{children}</div>
+  <div className="min-h-dvh flex flex-col items-center justify-center gap-3 p-6 text-sm text-ink-3">{children}</div>
 );
 
 function Shell() {
@@ -49,57 +49,57 @@ function Shell() {
   return (
     <div className="min-h-dvh md:flex">
       {/* barra lateral en escritorio */}
-      <aside className="hidden md:flex md:w-60 md:flex-col md:border-r md:border-border md:bg-card md:sticky md:top-0 md:h-dvh">
-        <div className="p-4 border-b border-border">
-          <Link to="/" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"><ArrowLeft className="size-3.5" />Mis proyectos</Link>
-          <h1 className="font-semibold leading-tight mt-1 truncate" title={p.meta.nombre}>{p.meta.nombre}</h1>
-          <p className="text-xs text-muted-foreground truncate">{p.meta.clientes || "Sin clientes capturados"}</p>
-          <div className="mt-2"><Semaforo nivel={calc.salud.nivel} etiqueta /></div>
+      <aside className="hidden md:flex md:w-56 md:flex-col md:border-r md:border-border-2 md:sticky md:top-0 md:h-dvh">
+        <div className="px-5 pt-5 pb-4">
+          <Link to="/" className="anno hover:text-foreground inline-flex items-center gap-1"><ArrowLeft className="size-3" />Proyectos</Link>
+          <h1 className="text-[17px] font-semibold leading-tight mt-3 truncate" title={p.meta.nombre}>{p.meta.nombre}</h1>
+          <p className="text-[12.5px] text-ink-2 truncate mt-0.5">{p.meta.clientes || "Sin clientes"}</p>
+          <div className="mt-3"><Semaforo nivel={calc.salud.nivel} etiqueta /></div>
         </div>
-        <nav className="p-2 space-y-0.5">
+        <nav className="px-3 border-t border-border pt-2">
           {NAV.map(([k, v, Icon]) => (
-            <NavLink key={k} to={k} className={({ isActive }) => cn("flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium", isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>
-              <Icon className="size-4" />{v}
+            <NavLink key={k} to={k} className={({ isActive }) => cn("flex items-center gap-3 px-2 py-2 text-[14px] border-l-2 -ml-px", isActive ? "border-foreground text-foreground font-medium" : "border-transparent text-ink-2 hover:text-foreground")}>
+              <Icon className="size-4 stroke-[1.5]" />{v}
             </NavLink>
           ))}
         </nav>
-        <div className="mt-auto p-4 border-t border-border space-y-2">
-          <div className="text-[11px] text-muted-foreground">Gran total</div>
-          <div className="font-semibold num">{fm(calc.granTotal)}</div>
+        <div className="mt-auto px-5 py-4 border-t border-border space-y-2">
+          <div className="anno">Gran total</div>
+          <div className="text-[19px] font-semibold fig">{fm(calc.granTotal)}</div>
           <StackedBar pagado={avance} tramite={pct(calc.porPagarObra, calc.granTotal)} />
-          <div className="flex justify-between text-[11px] text-muted-foreground num"><span>Pagado {avance}%</span><span>{fm(calc.porPagarObra)} en trámite</span></div>
+          <div className="flex justify-between text-[11px] text-ink-3 num"><span>Pagado {avance}%</span><span>{fm(calc.porPagarObra)} en trámite</span></div>
         </div>
       </aside>
 
       <div className="flex-1 min-w-0 flex flex-col">
         {/* encabezado en móvil */}
-        <header className="md:hidden sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur px-4 pt-3 pb-2">
-          <div className="flex items-center gap-2">
-            <Link to="/" className="text-muted-foreground -ml-1 p-1" aria-label="Mis proyectos"><ArrowLeft className="size-5" /></Link>
+        <header className="md:hidden sticky top-0 z-20 border-b border-border-2 bg-background/95 backdrop-blur px-4 pt-2 pb-2" style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top))" }}>
+          <div className="flex items-center gap-2 min-h-11">
+            <Link to="/" className="text-ink-2 -ml-2 p-2" aria-label="Mis proyectos"><ArrowLeft className="size-5 stroke-[1.75]" /></Link>
             <div className="min-w-0 flex-1">
-              <h1 className="font-semibold leading-tight truncate">{p.meta.nombre}</h1>
-              <p className="text-[11px] text-muted-foreground num truncate">Pagado {avance}% de {fm(calc.granTotal)}{calc.porPagarObra > 0 ? ` · ${fm(calc.porPagarObra)} en trámite` : ""}</p>
+              <h1 className="text-[15px] font-semibold leading-tight truncate">{p.meta.nombre}</h1>
+              <p className="anno truncate normal-case tracking-[0.04em]">Pagado {avance}% · {fm(calc.granTotal)}</p>
             </div>
             <Semaforo nivel={calc.salud.nivel} etiqueta />
           </div>
         </header>
 
-        <main className="flex-1 mx-auto w-full max-w-3xl px-4 py-4 pb-28 md:pb-10 md:px-8 md:py-6 space-y-3">
+        <main className="flex-1 mx-auto w-full max-w-3xl px-4 pt-4 pb-32 md:pb-12 md:px-10 md:pt-8 space-y-6">
           <Outlet />
         </main>
 
         {/* botón flotante: registrar pago desde cualquier vista */}
-        <Button className="fixed right-4 bottom-20 md:bottom-6 md:right-8 z-30 rounded-full shadow-lg h-12 px-5" onClick={() => abrir({ tipo: "pago", d: {} })}><Plus />Pago</Button>
+        <Button className="fixed right-4 z-30 h-12 px-5 shadow-[0_6px_20px_-8px_rgba(23,23,22,.5)] md:bottom-8 md:right-10" style={{ bottom: "calc(4.25rem + env(safe-area-inset-bottom))" }} onClick={() => abrir({ tipo: "pago", d: {} })}><Plus />Pago</Button>
 
         {/* pestañas inferiores en móvil */}
-        <nav className="md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-border bg-card/95 backdrop-blur grid grid-cols-5" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+        <nav className="md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-border-2 bg-panel/95 backdrop-blur grid grid-cols-5" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
           {NAV.filter(([k]) => MOVIL.has(k)).map(([k, v, Icon]) => (
-            <NavLink key={k} to={k} className={({ isActive }) => cn("flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium", isActive ? "text-primary" : "text-muted-foreground")}>
-              <Icon className="size-5" />{v}
+            <NavLink key={k} to={k} className={({ isActive }) => cn("flex flex-col items-center justify-center gap-1 h-14 font-mono uppercase text-[9px] tracking-[0.08em]", isActive ? "text-foreground" : "text-ink-3")}>
+              {({ isActive }) => <><Icon className={cn("size-[22px]", isActive ? "stroke-[2]" : "stroke-[1.5]")} />{v}</>}
             </NavLink>
           ))}
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium text-muted-foreground data-[state=open]:text-primary" aria-label="Más"><MoreHorizontal className="size-5" />Más</DropdownMenuTrigger>
+            <DropdownMenuTrigger className="flex flex-col items-center justify-center gap-1 h-14 font-mono uppercase text-[9px] tracking-[0.08em] text-ink-3 data-[state=open]:text-foreground" aria-label="Más"><MoreHorizontal className="size-[22px] stroke-[1.5]" />Más</DropdownMenuTrigger>
             <DropdownMenuContent side="top" align="end" sideOffset={8} className="mb-1">
               {NAV.filter(([k]) => !MOVIL.has(k)).map(([k, v, Icon]) => (
                 <DropdownMenuItem key={k} asChild><NavLink to={k}><Icon />{v}</NavLink></DropdownMenuItem>

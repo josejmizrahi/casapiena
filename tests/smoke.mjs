@@ -44,6 +44,8 @@ async function conVista(nombre, viewport, fn) {
   const page = await browser.newPage({ viewport });
   page.on("pageerror", (e) => errors.push(`PAGEERROR (${nombre}): ${e.message}`));
   page.on("console", (m) => { if (m.type() === "error") errors.push(`CONSOLE (${nombre}): ${m.text().slice(0, 300)}`); });
+  // las fuentes web no importan para la prueba y no hay red en el sandbox
+  await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.fulfill({ status: 200, contentType: "text/css", body: "" }));
   await page.route("**/auth/v1/**", (r) => r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) }));
   await page.route("**/rest/v1/**", (r) => {
     const u = new URL(r.request().url()); const t = u.pathname.split("/").pop();
@@ -77,7 +79,7 @@ for (const [nombre, viewport] of [["movil", { width: 420, height: 860 }], ["escr
     await paso("lista de proyectos", async () => { await page.goto(`http://localhost:${PORT}/`); await page.waitForSelector("text=Casa Piena", { timeout: 8000 }); });
     await paso("archivados", async () => { await page.click("button:has-text('Archivados')"); await page.waitForSelector("text=Otra casa"); await page.click("button:has-text('Activos')"); });
     await paso("asistente: 4 pasos y crear", async () => {
-      await page.click("button:has-text('Nuevo proyecto')");
+      await page.click("header button:has-text('Nuevo')");
       await page.waitForSelector("[role=dialog]");
       await page.fill("[role=dialog] input >> nth=0", "Obra de prueba");
       await page.fill("[role=dialog] input[inputmode=decimal] >> nth=0", "1000000");

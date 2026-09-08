@@ -44,7 +44,7 @@ export function ProveedorDialog({ d0, onSave }: { d0: Partial<Proveedor>; onSave
         {dup && <p className="text-xs text-bad">Ya tienes un proveedor con ese nombre.</p>}
         {d.id && (
           <>
-            <div className="rounded-xl border bg-muted/60 px-3 py-1">
+            <div className="rounded-md border bg-panel border-border px-3 py-1">
               <KV k={`Contratado (${conceptos.length} concepto${conceptos.length === 1 ? "" : "s"})`} v={fm(comprometido)} />
               <KV k="Pagado" v={fm(pagado)} tone="ok" />
               {enTramite > 0 && <KV k="En trámite" v={fm(enTramite)} tone="warn" />}
@@ -54,8 +54,8 @@ export function ProveedorDialog({ d0, onSave }: { d0: Partial<Proveedor>; onSave
             <div>
               {conceptos.map((c) => (
                 <Row key={c.id} onClick={() => abrir({ tipo: "concepto", d: conceptoForm(c) })}
-                  left={<><div className="text-sm font-medium truncate">{c.nombre}</div><div className="text-xs text-muted-foreground">{c.partida} · pagado {c.pctPagado}%</div></>}
-                  right={<><div className="text-sm font-semibold">{fm(c.total)}</div>{c.saldo > 0.005 && <div className="text-[11px] text-muted-foreground">saldo {fm(c.saldo)}</div>}</>} />
+                  left={<><div className="text-sm font-medium truncate">{c.nombre}</div><div className="text-xs text-ink-3">{c.partida} · pagado {c.pctPagado}%</div></>}
+                  right={<><div className="text-sm font-semibold">{fm(c.total)}</div>{c.saldo > 0.005 && <div className="text-[11px] text-ink-3">saldo {fm(c.saldo)}</div>}</>} />
               ))}
             </div>
           </>

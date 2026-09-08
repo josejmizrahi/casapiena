@@ -86,7 +86,7 @@ export function ConceptoDialog({ d0 }: { d0: api.ConceptoForm }) {
         <Field label="Avance físico real" hint="Lo que de verdad está hecho o instalado. Se compara contra lo pagado para avisarte si vas pagando por adelantado.">
           <div className="flex items-center gap-2">
             <div className="flex gap-1">{[0, 25, 50, 75, 100].map((v) => <Button key={v} type="button" size="sm" variant={d.avance === v ? "default" : "outline"} className="px-2.5" onClick={() => set("avance", v)}>{v}%</Button>)}</div>
-            <div className="relative w-20 ml-auto"><Input inputMode="numeric" className="num pr-6 text-right" value={d.avance} onChange={(e) => set("avance", Math.max(0, Math.min(100, num(e.target.value))))} /><span className="absolute right-2 top-2.5 text-xs text-muted-foreground">%</span></div>
+            <div className="relative w-20 ml-auto"><Input inputMode="numeric" className="num pr-6 text-right" value={d.avance} onChange={(e) => set("avance", Math.max(0, Math.min(100, num(e.target.value))))} /><span className="absolute right-2 top-2.5 text-xs text-ink-3">%</span></div>
           </div>
         </Field>
         <Field label="Links (tienda, cotización, seguimiento)">
@@ -102,11 +102,11 @@ export function ConceptoDialog({ d0 }: { d0: api.ConceptoForm }) {
           </div>
         </Field>
 
-        <div className={cn("rounded-xl border px-3 py-1", excede ? "bg-bad-bg border-bad/30" : "bg-muted/60")}>
+        <div className={cn("rounded-md border px-3 py-1", excede ? "bg-bad-bg border-bad/30" : "bg-panel border-border")}>
           <KV k="Total con IVA" v={fm2(total)} />
           {pa && pa.candadoEf > 0 && <KV k="Candado de la partida" v={fm(pa.candadoEf)} />}
           {pa && pa.candadoEf > 0 && <KV k={excede ? "Excede el candado por" : "Quedaría disponible"} v={fm(Math.abs(pa.candadoEf - otros - total))} tone={excede ? "bad" : "ok"} />}
-          {d.id && <KV k="Pagado" v={<>{fm2(pagado)} <span className="text-muted-foreground font-normal">({pct(pagado, total)}%)</span></>} />}
+          {d.id && <KV k="Pagado" v={<>{fm2(pagado)} <span className="text-ink-3 font-normal">({pct(pagado, total)}%)</span></>} />}
           {d.id && <KV k="Saldo a ejercer" v={fm2(total - pagado)} />}
           {d.id && c && Math.abs(c.desviacion) > 0.005 && <KV k={`Línea base ${fm2(c.baseTotal)} · desviación`} v={`${c.desviacion > 0 ? "+" : ""}${fm2(c.desviacion)}`} tone={c.desviacion > 0 ? "bad" : "ok"} />}
           {d.id && d.avance > 0 && total > 0 && <KV k={`Avance físico ${d.avance}% · pagado ${pct(pagado, total)}%`} v={pct(pagado, total) - d.avance >= DESFASE_AVISO ? "Pagado por adelantado" : "En ritmo"} tone={pct(pagado, total) - d.avance >= DESFASE_AVISO ? "warn" : "ok"} />}
@@ -114,7 +114,7 @@ export function ConceptoDialog({ d0 }: { d0: api.ConceptoForm }) {
         {d.id && ajustes.length > 0 && (
           <div>
             <Label>Bitácora del presupuesto</Label>
-            <div className="mt-1 space-y-1 border-l-2 border-border pl-3 text-xs text-muted-foreground num">
+            <div className="mt-1 space-y-1 border-l-2 border-border pl-3 text-xs text-ink-3 num">
               <div>Original: {fm2(base.presupuesto + base.iva)}</div>
               {ajustes.map((a) => <div key={a.id}>{fecha(a.fecha)}: {fm2(a.anterior)} → {fm2(a.nuevo)} <b className={a.nuevo > a.anterior ? "text-bad" : "text-ok"}>({a.nuevo > a.anterior ? "+" : ""}{fm(a.nuevo - a.anterior)})</b>{a.motivo ? ` · ${a.motivo}` : ""}</div>)}
             </div>
@@ -124,7 +124,7 @@ export function ConceptoDialog({ d0 }: { d0: api.ConceptoForm }) {
           <div>
             {pagosC.map((x) => (
               <Row key={x.id} onClick={() => abrir({ tipo: "pago", d: pagoDesde(x) })}
-                left={<><div className="text-sm font-medium">Rel {x.rel} · {x.status}</div><div className="text-xs text-muted-foreground flex items-center gap-1.5">{fecha(x.fecha)} <FormaBadge f={x.forma} /><FlujoBadge e={x.estado} /></div></>}
+                left={<><div className="text-sm font-medium">Rel {x.rel} · {x.status}</div><div className="text-xs text-ink-3 flex items-center gap-1.5">{fecha(x.fecha)} <FormaBadge f={x.forma} /><FlujoBadge e={x.estado} /></div></>}
                 right={<div className="text-sm font-semibold">{fm(x.monto)}</div>} />
             ))}
             <Button variant="dashed" size="sm" className="mt-2" onClick={() => abrir({ tipo: "pago", d: { tipo: "obra", conceptoId: d.id, proveedorId: d.proveedorId, fecha: HOY(), forma: "Transferencia", monto: Math.max(0, total - pagado), rel: rels.length ? rels[rels.length - 1].n : 1, status: pagado > 0 ? "Finiquito" : "Anticipo", estado: "solicitado" } })}><Plus />Pago a este concepto</Button>
