@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from "@/lib/supabase";
-import type { Adjunto, CatalogoProveedor, Concepto, Excedente, Meta, Miembro, Pago, Partida, PlantillaGuardada, PlantillaPartida, Proveedor, Proyecto, ProyectoResumen, Relacion, Traspaso } from "@/lib/types";
+import type { Adjunto, CatalogoProveedor, Concepto, Excedente, Meta, Miembro, Pago, Partida, Perfil, PlantillaGuardada, PlantillaPartida, Proveedor, Proyecto, ProyectoResumen, Relacion, Traspaso } from "@/lib/types";
 
 const ok = <T,>({ data, error }: { data: T | null; error: { message: string } | null }): T => {
   if (error) throw new Error(error.message);
@@ -40,6 +40,12 @@ export async function cargar(proyectoId: string): Promise<Proyecto> {
       ])).map((r) => ok<any>(r))
     : [[], []];
 
+  return armarProyecto({ proy, provs, parts, cons, links, ajus, rels, pags, excs, tras });
+}
+
+/** Convierte filas de la base en el Proyecto que usa la interfaz. Lo usan cargar() y el reporte público. */
+export function armarProyecto(f: { proy: any; provs: any[]; parts: any[]; cons: any[]; links: any[]; ajus: any[]; rels: any[]; pags: any[]; excs: any[]; tras: any[] }): Proyecto {
+  const { proy, provs, parts, cons, links, ajus, rels, pags, excs, tras } = f;
   const linksDe: Record<string, Concepto["links"]> = {};
   for (const l of links) (linksDe[l.concepto_id] ||= []).push({ id: l.id, titulo: l.titulo || "", url: l.url });
   const ajusDe: Record<string, Concepto["ajustes"]> = {};
@@ -242,4 +248,55 @@ export async function urlsFirmadas(rutas: string[]): Promise<Record<string, stri
   const out: Record<string, string> = {};
   for (const d of data || []) if (d.signedUrl && d.path) out[d.path] = d.signedUrl;
   return out;
+}
+
+// ── perfil (nombre, despacho, logo) ─────────────────────────────
+const LOGOS = "logos";
+const logoUrl = (ruta: string) => (ruta ? supabase.storage.from(LOGOS).getPublicUrl(ruta).data.publicUrl : "");
+export async function miPerfil(): Promise<Perfil> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { nombre: "", despacho: "", telefono: "", logoUrl: "" };
+  const r = ok<any>(await supabase.from("perfiles").select("nombre,despacho,telefono,logo_ruta").eq("user_id", user.id).maybeSingle());
+  return { nombre: r?.nombre || "", despacho: r?.despacho || "", telefono: r?.telefono || "", logoUrl: logoUrl(r?.logo_ruta || "") };
+}
+/** Perfil del dueño de un proyecto (para "preparado por" en el reporte). */
+export async function perfilDe(userId: string): Promise<Perfil> {
+  const r = ok<any>(await supabase.from("perfiles").select("nombre,despacho,telefono,logo_ruta").eq("user_id", userId).maybeSingle());
+  return { nombre: r?.nombre || "", despacho: r?.despacho || "", telefono: r?.telefono || "", logoUrl: logoUrl(r?.logo_ruta || "") };
+}
+export async function guardarPerfil(d: { nombre: string; despacho: string; telefono: string }) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Sin sesión");
+  await supabase.from("perfiles").upsert({ user_id: user.id, nombre: d.nombre, despacho: d.despacho, telefono: d.telefono, updated_at: new Date().toISOString() }).then(ok);
+}
+export async function subirLogo(file: File): Promise<string> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Sin sesión");
+  const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const ruta = `${user.id}/logo-${Date.now()}.${ext}`;
+  const { error } = await supabase.storage.from(LOGOS).upload(ruta, file, { contentType: file.type || undefined, upsert: true });
+  if (error) throw new Error(error.message);
+  await supabase.from("perfiles").upsert({ user_id: user.id, logo_ruta: ruta, updated_at: new Date().toISOString() }).then(ok);
+  return logoUrl(ruta);
+}
+export async function quitarLogo() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase.from("perfiles").upsert({ user_id: user.id, logo_ruta: "", updated_at: new Date().toISOString() }).then(ok);
+}
+
+// ── liga pública del reporte ────────────────────────────────────
+export async function ligaReporte(proyectoId: string): Promise<string | null> {
+  const r = ok<{ token: string }[]>(await supabase.from("ligas_reporte").select("token").eq("proyecto_id", proyectoId).eq("activa", true).limit(1));
+  return r[0]?.token || null;
+}
+export const crearLigaReporte = async (proyectoId: string): Promise<string> => ok(await supabase.rpc("crear_liga_reporte", { p: proyectoId }));
+export const desactivarLigaReporte = (proyectoId: string) => supabase.from("ligas_reporte").update({ activa: false }).eq("proyecto_id", proyectoId).then(ok);
+/** Proyecto completo para el reporte público, o null si la liga no existe o se desactivó. */
+export async function reportePublico(token: string): Promise<{ proyecto: Proyecto; perfil: Perfil } | null> {
+  const d = ok<any>(await supabase.rpc("reporte_publico", { t: token }));
+  if (!d) return null;
+  const proyecto = armarProyecto({ proy: d.proyecto, provs: d.proveedores, parts: d.partidas, cons: d.conceptos, links: [], ajus: d.ajustes, rels: d.relaciones, pags: d.pagos, excs: d.excedentes, tras: d.traspasos });
+  const pf = d.perfil || {};
+  return { proyecto, perfil: { nombre: pf.nombre || "", despacho: pf.despacho || "", telefono: pf.telefono || "", logoUrl: logoUrl(pf.logo_ruta || "") } };
 }

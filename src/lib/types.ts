@@ -62,3 +62,4 @@ export interface Adjunto { id: string; proyectoId: string; conceptoId: string | 
 export interface CatalogoProveedor { id: string; nombre: string; razon: string; banco: string; clabe: string; tel: string; nota: string }
 export interface PlantillaPartida { nombre: string; pct: number; contingencia?: boolean; conceptos?: { nombre: string; unidad?: string; prioridad?: Prioridad }[] }
 export interface PlantillaGuardada { id: string; nombre: string; descripcion: string; cuerpo: PlantillaPartida[]; created_at: string }
+export interface Perfil { nombre: string; despacho: string; telefono: string; logoUrl: string }

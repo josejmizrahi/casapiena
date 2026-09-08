@@ -10,12 +10,18 @@ export default function Login() {
   const [pass, setPass] = useState("");
   const [err, setErr] = useState("");
   const [cargando, setCargando] = useState(false);
-  const [modo, setModo] = useState<"entrar" | "crear">("entrar");
+  const [modo, setModo] = useState<"entrar" | "crear" | "olvide">("entrar");
   const [aviso, setAviso] = useState("");
-  const listo = correo.includes("@") && pass.length >= 6 && !cargando;
+  const listo = correo.includes("@") && (modo === "olvide" || pass.length >= 6) && !cargando;
   const entrar = async () => {
     if (!listo) return;
     setErr(""); setCargando(true);
+    if (modo === "olvide") {
+      const { error } = await supabase.auth.resetPasswordForEmail(correo.trim(), { redirectTo: location.origin + location.pathname });
+      setCargando(false);
+      if (error) return setErr(error.message);
+      return setAviso("Te enviamos un correo con una liga para poner contraseña nueva. Ábrela desde este mismo teléfono o computadora.");
+    }
     if (modo === "crear") {
       // Cuenta nueva. Si el proyecto de Supabase pide confirmar el correo, no hay sesión todavía.
       const { data, error } = await supabase.auth.signUp({ email: correo.trim(), password: pass });
@@ -47,14 +53,19 @@ export default function Login() {
         ) : (
           <>
             <Field label="Correo"><Input type="email" inputMode="email" autoComplete="email" placeholder="tu@correo.com" value={correo} onChange={(e) => setCorreo(e.target.value)} autoFocus /></Field>
-            <Field label={modo === "crear" ? "Elige una contraseña" : "Contraseña"} hint={modo === "crear" ? "Mínimo 6 caracteres. Si alguien te invitó a un proyecto, usa el mismo correo al que te invitaron." : undefined}>
-              <Input type="password" autoComplete={modo === "crear" ? "new-password" : "current-password"} placeholder="••••••••" value={pass} onChange={(e) => setPass(e.target.value)} />
-            </Field>
+            {modo !== "olvide" && (
+              <Field label={modo === "crear" ? "Elige una contraseña" : "Contraseña"} hint={modo === "crear" ? "Mínimo 6 caracteres. Si alguien te invitó a un proyecto, usa el mismo correo al que te invitaron." : undefined}>
+                <Input type="password" autoComplete={modo === "crear" ? "new-password" : "current-password"} placeholder="••••••••" value={pass} onChange={(e) => setPass(e.target.value)} />
+              </Field>
+            )}
             {err && <p className="text-[13px] text-bad">{err}</p>}
-            <Button type="submit" className="w-full" disabled={!listo}>{cargando ? (modo === "crear" ? "Creando…" : "Entrando…") : modo === "crear" ? "Crear cuenta" : "Entrar"}</Button>
-            <button type="button" className="block w-full text-center text-[13px] text-ink-2 underline underline-offset-4 decoration-border-2 hover:text-foreground py-1" onClick={() => { setModo(modo === "crear" ? "entrar" : "crear"); setErr(""); }}>
-              {modo === "crear" ? "Ya tengo cuenta, entrar" : "¿Primera vez? Crear cuenta"}
-            </button>
+            <Button type="submit" className="w-full" disabled={!listo}>{cargando ? "Un momento…" : modo === "crear" ? "Crear cuenta" : modo === "olvide" ? "Enviarme la liga" : "Entrar"}</Button>
+            <div className="flex justify-between text-[13px]">
+              <button type="button" className="text-ink-2 underline underline-offset-4 decoration-border-2 hover:text-foreground py-1" onClick={() => { setModo(modo === "entrar" ? "crear" : "entrar"); setErr(""); }}>
+                {modo === "entrar" ? "¿Primera vez? Crear cuenta" : "Ya tengo cuenta, entrar"}
+              </button>
+              {modo === "entrar" && <button type="button" className="text-ink-2 underline underline-offset-4 decoration-border-2 hover:text-foreground py-1" onClick={() => { setModo("olvide"); setErr(""); }}>Olvidé mi contraseña</button>}
+            </div>
           </>
         )}
       </form>

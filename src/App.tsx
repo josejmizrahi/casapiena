@@ -19,6 +19,8 @@ import Resumen from "@/pages/proyecto/Resumen";
 import Proveedores from "@/pages/proyecto/Proveedores";
 import Ajustes from "@/pages/proyecto/Ajustes";
 import Reporte from "@/pages/proyecto/Reporte";
+import ReportePublico from "@/pages/ReportePublico";
+import NuevaContrasena from "@/pages/NuevaContrasena";
 
 // Caché persistente: el último proyecto cargado se abre sin conexión.
 const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false, gcTime: 7 * 24 * 3600 * 1000 } } });
@@ -58,8 +60,12 @@ class Guardia extends Component<{ children: ReactNode }, { error: Error | null }
 
 function Rutas() {
   const sesion = useSesion();
+  const [recuperando, setRecuperando] = useState(() => sessionStorage.getItem("obra:recuperar") === "1");
+  const publico = location.hash.startsWith("#/r/");
+  if (publico) return <Routes><Route path="/r/:token" element={<ReportePublico />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>;
   if (sesion === undefined) return <div className="min-h-dvh flex items-center justify-center text-sm text-ink-3">Cargando…</div>;
   if (!sesion) return <Login />;
+  if (recuperando) return <NuevaContrasena onListo={() => { sessionStorage.removeItem("obra:recuperar"); setRecuperando(false); }} />;
   return (
     <Routes>
       <Route path="/" element={<Proyectos />} />
