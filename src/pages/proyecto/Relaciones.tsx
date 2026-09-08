@@ -18,7 +18,13 @@ export default function Relaciones() {
   const marcarRel = (relId: string, estado: string) => accion(() => api.marcarRelacion(relId, estado, HOY()), estado === "pagado" ? "Relación pagada" : "Pagos autorizados");
   return (
     <>
-      {rels.length === 0 && <Empty>Las relaciones se crean al registrar pagos o con “+ Relación”. Imprímelas antes de pagar: los pagos en estado Solicitado ya salen en el documento.</Empty>}
+      {rels.length === 0 && (
+        <Empty>
+          <p className="font-medium text-foreground">Todavía no hay relaciones</p>
+          <p className="mt-1">Una relación es el paquete de pagos que entregas al cliente para que libere dinero, con fecha límite. Se crea sola al registrar un pago, o aquí con “+ Relación”. Imprímela antes de pagar: los pagos solicitados ya salen en el documento.</p>
+          <Button size="sm" className="mt-3" onClick={() => abrir({ tipo: "rel", d: { n: nextRel(), fecha: HOY(), fechaLimite: "" } })}><Plus />Primera relación</Button>
+        </Empty>
+      )}
       {rels.map((r) => {
         const lista = p.pagos.filter((x) => x.rel === r.n);
         const tot = lista.reduce((s, x) => s + x.monto, 0);

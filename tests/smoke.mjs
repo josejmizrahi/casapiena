@@ -76,10 +76,30 @@ for (const [nombre, viewport] of [["movil", { width: 420, height: 860 }], ["escr
   await conVista(nombre, viewport, async (page, paso, dialogo) => {
     await paso("lista de proyectos", async () => { await page.goto(`http://localhost:${PORT}/`); await page.waitForSelector("text=Casa Piena", { timeout: 8000 }); });
     await paso("archivados", async () => { await page.click("button:has-text('Archivados')"); await page.waitForSelector("text=Otra casa"); await page.click("button:has-text('Activos')"); });
-    await paso("nuevo proyecto (diálogo)", async () => { await page.click("button:has-text('Nuevo proyecto')"); await dialogo(); });
-    await paso("abrir proyecto", async () => { await page.click(`a[href="#/p/${PID}"] >> nth=0`); await page.waitForSelector("text=Comprometido", { timeout: 8000 }); });
-    const ir = (ruta) => page.locator(`a[href="#/p/${PID}/${ruta}"]`).locator("visible=true").first().click();
-    for (const ruta of ["compras", "pagos", "relaciones", "resumen", "proveedores", "ajustes", "obra"]) await paso(`vista ${ruta}`, async () => { await ir(ruta); await page.waitForURL(`**/#/p/${PID}/${ruta}`); await page.waitForTimeout(400); if (process.env.SHOT) await page.screenshot({ path: `${process.env.SHOT}-${nombre}-${ruta}.png`, fullPage: true }); });
+    await paso("asistente: 4 pasos y crear", async () => {
+      await page.click("button:has-text('Nuevo proyecto')");
+      await page.waitForSelector("[role=dialog]");
+      await page.fill("[role=dialog] input >> nth=0", "Obra de prueba");
+      await page.fill("[role=dialog] input[inputmode=decimal] >> nth=0", "1000000");
+      await page.click("button:has-text('Siguiente')");
+      await page.click("button:has-text('Remodelación')");
+      await page.click("button:has-text('Siguiente')");
+      await page.waitForSelector("text=Asignado en candados");
+      await page.click("button:has-text('Siguiente')");
+      await page.waitForSelector("text=Candados asignados");
+      await page.click("button:has-text('Crear proyecto')");
+      await page.waitForURL(`**/#/p/${PID}/hoy`, { timeout: 8000 });
+      await page.waitForSelector("text=Requiere tu atención");
+      await page.goto(`http://localhost:${PORT}/`); await page.waitForSelector("text=Casa Piena");
+    });
+    await paso("abrir proyecto (Hoy)", async () => { await page.click(`a[href="#/p/${PID}"] >> nth=0`); await page.waitForSelector("text=Requiere tu atención", { timeout: 8000 }); if (process.env.SHOT) await page.screenshot({ path: `${process.env.SHOT}-${nombre}-hoy.png`, fullPage: true }); });
+    await paso("guía del método", async () => { await page.click("button:has-text('Guía')"); await page.waitForSelector("text=Partidas y candados"); await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" }); });
+    const ir = async (ruta) => {
+      const link = page.locator(`a[href="#/p/${PID}/${ruta}"]`).locator("visible=true");
+      if (await link.count() === 0) await page.click("button:has-text('Más')");
+      await page.locator(`a[href="#/p/${PID}/${ruta}"]`).locator("visible=true").first().click();
+    };
+    for (const ruta of ["compras", "pagos", "relaciones", "resumen", "proveedores", "ajustes", "obra", "hoy", "obra"]) await paso(`vista ${ruta}`, async () => { await ir(ruta); await page.waitForURL(`**/#/p/${PID}/${ruta}`); await page.waitForTimeout(400); if (process.env.SHOT) await page.screenshot({ path: `${process.env.SHOT}-${nombre}-${ruta}.png`, fullPage: true }); });
     if (lleno) {
       await paso("obra: abrir partida", async () => { await page.click(`button:has-text("${seed.partidas[0].nombre}")`); await page.waitForSelector(`text=${seed.partidas[0].conceptos[0].nombre}`); });
       await paso("obra: diálogo concepto", async () => { await page.click(`button:has-text("${seed.partidas[0].conceptos[0].nombre}")`); await dialogo(); });

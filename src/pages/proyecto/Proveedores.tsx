@@ -25,7 +25,13 @@ export default function Proveedores() {
         <Stat label="Con saldo" value={conSaldo.length} />
         <Stat label="Por pagar" value={fm(conSaldo.reduce((s, x) => s + x.saldo, 0))} tone="warn" />
       </StatStrip>
-      {lista.length === 0 && <Empty>Aún no tienes proveedores. Créalos aquí o desde cualquier concepto o pago.</Empty>}
+      {lista.length === 0 && (
+        <Empty>
+          <p className="font-medium text-foreground">Aún no tienes proveedores</p>
+          <p className="mt-1">Guarda razón social, banco y CLABE una vez; después cada relación impresa sale con los datos para transferir. También puedes crearlos desde cualquier concepto o pago.</p>
+          <Button size="sm" className="mt-3" onClick={() => abrir({ tipo: "prov", d: {} })}><Plus />Primer proveedor</Button>
+        </Empty>
+      )}
       <Card>
         <CardContent className="pt-2">
           {lista.map((v) => (

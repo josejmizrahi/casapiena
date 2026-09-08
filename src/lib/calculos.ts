@@ -2,11 +2,17 @@ import type { Concepto, Partida, Prioridad, Proyecto } from "./types";
 import { PRIO, PRIO_ORDEN } from "./types";
 import { mesLabel, pct } from "./utils";
 
+/** Semáforo por partida: proporción del candado ya comprometida. */
+export type Nivel = "sinCandado" | "ok" | "ambar" | "rojo";
+export const UMBRAL_AMBAR = 0.8;
+export const nivelDe = (comprometido: number, candado: number): Nivel =>
+  candado <= 0 ? "sinCandado" : comprometido > candado + 0.005 ? "rojo" : comprometido >= candado * UMBRAL_AMBAR ? "ambar" : "ok";
+
 export interface ConceptoCalc extends Concepto { total: number; pagado: number; enTramite: number; saldo: number; pctPagado: number }
 export interface PartidaCalc extends Omit<Partida, "conceptos"> {
   conceptos: ConceptoCalc[]; comprometido: number; pagado: number; enTramite: number;
   recibido: number; cedido: number; candadoEf: number; disponible: number; comparativa: number;
-  excedido: boolean; avance: number; adelantada: boolean;
+  excedido: boolean; avance: number; adelantada: boolean; nivel: Nivel; usoCandado: number;
 }
 export interface MesFlujo { ym: string; mes: string; pagado: number; previsto: number; acumulado: number }
 export interface Calculo {
@@ -15,6 +21,8 @@ export interface Calculo {
   avanceGlobal: number; comparativaGlobal: number; excedenteFavor: number; excedenteUsado: number; excedenteDiferencia: number;
   flujo: MesFlujo[]; porPrioridad: { k: Prioridad; etiqueta: string; conceptos: number; monto: number; pagado: number }[];
   conceptos: ConceptoCalc[];
+  /** Salud global: rojo si se pasa del presupuesto o hay partidas excedidas; ámbar si hay partidas cerca; verde si no. */
+  salud: { nivel: Nivel; rojas: number; ambar: number; sinCandado: number; candadosSobrePresupuesto: boolean; sinPresupuesto: number; sinProveedor: number };
 }
 
 /** Toda la aritmética del proyecto: candados, comprometido, pagado, flujo. Pura, sin efectos. */
@@ -49,6 +57,7 @@ export function calcular(p: Proyecto): Calculo {
       ...pa, conceptos, comprometido, pagado, enTramite, recibido, cedido, candadoEf,
       disponible: candadoEf - comprometido, comparativa: candadoEf - comprometido,
       excedido: candadoEf > 0 && comprometido > candadoEf + 0.005, avance: 0, adelantada: false,
+      nivel: nivelDe(comprometido, candadoEf), usoCandado: candadoEf > 0 ? comprometido / candadoEf : 0,
     };
   });
   const honorarios = totalObra * (p.meta.pctHonorarios / 100);
@@ -81,8 +90,20 @@ export function calcular(p: Proyecto): Calculo {
   const flujo = Object.values(meses).sort((a, b) => a.ym.localeCompare(b.ym));
   let acum = 0; for (const m of flujo) { acum += m.pagado + m.previsto; m.acumulado = acum; }
 
+  const rojas = partidas.filter((x) => x.nivel === "rojo").length;
+  const ambar = partidas.filter((x) => x.nivel === "ambar").length;
+  const sinCandado = partidas.filter((x) => x.nivel === "sinCandado").length;
+  const pasaPresupuesto = p.meta.presupuestoObra > 0 && totalObra > p.meta.presupuestoObra + 0.005;
+  const salud: Calculo["salud"] = {
+    nivel: pasaPresupuesto || rojas > 0 ? "rojo" : ambar > 0 || (p.meta.presupuestoObra > 0 && totalObra >= p.meta.presupuestoObra * UMBRAL_AMBAR) ? "ambar" : partidas.length ? "ok" : "sinCandado",
+    rojas, ambar, sinCandado,
+    candadosSobrePresupuesto: p.meta.presupuestoObra > 0 && totalCandados > p.meta.presupuestoObra + 0.005,
+    sinPresupuesto: conceptos.filter((c) => c.total === 0).length,
+    sinProveedor: conceptos.filter((c) => !c.proveedorId && c.total > 0).length,
+  };
+
   return {
-    partidas, conceptos, totalObra, totalCandados, pagadoObra, porPagarObra, honorarios, pagadoHonorarios, granTotal, pagadoTotal, pagosPorRel,
+    salud, partidas, conceptos, totalObra, totalCandados, pagadoObra, porPagarObra, honorarios, pagadoHonorarios, granTotal, pagadoTotal, pagosPorRel,
     avanceGlobal, comparativaGlobal: p.meta.presupuestoObra - totalObra,
     excedenteFavor, excedenteUsado, excedenteDiferencia: excedenteFavor - excedenteUsado, flujo, porPrioridad,
   };

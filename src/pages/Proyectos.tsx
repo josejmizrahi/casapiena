@@ -15,6 +15,7 @@ import { Dialog, DialogActions, DialogContent } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Empty } from "@/components/ui/misc";
 import { Segmented } from "@/components/ui/segmented";
+import { AsistenteProyecto } from "@/components/AsistenteProyecto";
 import { useSesion } from "@/hooks/useSesion";
 
 export default function Proyectos() {
@@ -102,33 +103,9 @@ export default function Proyectos() {
           ))}
         </div>
       </main>
-      <NuevoProyecto open={nuevo} onClose={() => setNuevo(false)} />
+      <AsistenteProyecto open={nuevo} onClose={() => setNuevo(false)} />
       <CambiarPass open={pass} onClose={() => setPass(false)} />
     </div>
-  );
-}
-
-function NuevoProyecto({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [nombre, setNombre] = useState("");
-  const [clientes, setClientes] = useState("");
-  const [cargando, setCargando] = useState(false);
-  const crear = async () => {
-    setCargando(true);
-    try { const p = await api.crearProyecto(nombre.trim(), clientes.trim()); onClose(); location.hash = `#/p/${p.id}`; }
-    catch (e) { toast.error("No se pudo crear", { description: e instanceof Error ? e.message : String(e) }); }
-    finally { setCargando(false); }
-  };
-  return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent title="Nuevo proyecto">
-        <Field label="Nombre"><Input autoFocus value={nombre} placeholder="Ej. Casa Piena — Mobiliario" onChange={(e) => setNombre(e.target.value)} onKeyDown={(e) => e.key === "Enter" && nombre.trim() && crear()} /></Field>
-        <Field label="Clientes"><Input value={clientes} placeholder="Ej. José y Lynda" onChange={(e) => setClientes(e.target.value)} /></Field>
-        <DialogActions>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button disabled={!nombre.trim() || cargando} onClick={crear}>{cargando ? "Creando…" : "Crear proyecto"}</Button>
-        </DialogActions>
-      </DialogContent>
-    </Dialog>
   );
 }
 

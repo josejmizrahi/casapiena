@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import Login from "@/pages/Login";
 import Proyectos from "@/pages/Proyectos";
 import ProyectoLayout from "@/pages/proyecto/Layout";
+import Hoy from "@/pages/proyecto/Hoy";
 import Obra from "@/pages/proyecto/Obra";
 import Compras from "@/pages/proyecto/Compras";
 import Pagos from "@/pages/proyecto/Pagos";
@@ -46,7 +47,8 @@ function Rutas() {
     <Routes>
       <Route path="/" element={<Proyectos />} />
       <Route path="/p/:id" element={<ProyectoLayout />}>
-        <Route index element={<Navigate to="obra" replace />} />
+        <Route index element={<Navigate to="hoy" replace />} />
+        <Route path="hoy" element={<Hoy />} />
         <Route path="obra" element={<Obra />} />
         <Route path="compras" element={<Compras />} />
         <Route path="pagos" element={<Pagos />} />
