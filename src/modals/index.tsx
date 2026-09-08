@@ -4,10 +4,11 @@ import { PartidaDialog, TraspasoDialog } from "./PartidaDialog";
 import { PagoDialog } from "./PagoDialog";
 import { RelacionDialog, ExcedenteDialog } from "./OtrosDialogs";
 import { ProveedorDialog } from "./ProveedorDialog";
+import { GuiaDialog } from "@/components/Guia";
 
 /** Monta el diálogo abierto (si hay). Un solo modal a la vez, como en un móvil. */
 export function Modales() {
-  const { modal } = useModal();
+  const { modal, cerrar } = useModal();
   if (!modal) return null;
   switch (modal.tipo) {
     case "concepto": return <ConceptoDialog key={modal.d.id || "nuevo"} d0={modal.d} />;
@@ -17,5 +18,6 @@ export function Modales() {
     case "rel": return <RelacionDialog d0={modal.d} />;
     case "exc": return <ExcedenteDialog d0={modal.d} />;
     case "prov": return <ProveedorDialog d0={modal.d} onSave={modal.onSave} />;
+    case "guia": return <GuiaDialog open onClose={cerrar} seccion={modal.seccion} />;
   }
 }

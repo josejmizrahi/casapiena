@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight, BookOpen } from "lucide-react";
 import { useProyecto } from "@/hooks/useProyecto";
 import { useModal } from "@/hooks/useModal";
 import * as api from "@/api";
@@ -25,6 +25,7 @@ export function PartidaDialog({ d0 }: { d0: { id?: string; nombre: string; canda
       <DialogContent title={d.id ? "Partida y candado" : "Nueva partida"}>
         <Field label="Nombre de la partida"><Input autoFocus={!d.id} value={d.nombre} onChange={(e) => setD({ ...d, nombre: e.target.value })} /></Field>
         <Field label="Candado original" hint="El máximo que quieres gastar aquí. Si una partida se pasa, traspásale candado de otra en vez de subirlo: así queda registrado de dónde salió."><MoneyInput value={d.candado} onChange={(v) => setD({ ...d, candado: v })} /></Field>
+        <button type="button" className="text-xs text-info inline-flex items-center gap-1 hover:underline" onClick={() => abrir({ tipo: "guia", seccion: "candados" })}><BookOpen className="size-3.5" />¿Qué es un candado y cómo se reparte?</button>
         {pa && (pa.recibido > 0 || pa.cedido > 0) && (
           <div className="rounded-xl border bg-muted/60 px-3 py-1">
             <KV k="Candado original" v={fm(pa.candado)} />

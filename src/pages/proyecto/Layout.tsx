@@ -1,17 +1,19 @@
 import { NavLink, Outlet, useParams, Link } from "react-router-dom";
-import { ArrowLeft, BarChart3, CreditCard, FileText, Hammer, Settings, ShoppingCart, Users, Plus } from "lucide-react";
+import { ArrowLeft, BarChart3, CreditCard, FileText, Hammer, Home, MoreHorizontal, Settings, ShoppingCart, Users, Plus } from "lucide-react";
 import { ProyectoContext, useAccion, useCtxValue, useProyecto, useProyectoQuery } from "@/hooks/useProyecto";
 import { ModalProvider, useModal } from "@/hooks/useModal";
 import { cn, fm, pct } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { StackedBar } from "@/components/ui/progress";
 import { Modales } from "@/modals";
+import { Semaforo } from "./Hoy";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/misc";
 
 const NAV = [
-  ["obra", "Obra", Hammer], ["compras", "Compras", ShoppingCart], ["pagos", "Pagos", CreditCard], ["relaciones", "Relaciones", FileText],
+  ["hoy", "Hoy", Home], ["obra", "Obra", Hammer], ["compras", "Compras", ShoppingCart], ["pagos", "Pagos", CreditCard], ["relaciones", "Relaciones", FileText],
   ["resumen", "Resumen", BarChart3], ["proveedores", "Proveedores", Users], ["ajustes", "Ajustes", Settings],
 ] as const;
-const MOVIL = new Set(["obra", "compras", "pagos", "relaciones", "resumen"]);
+const MOVIL = new Set(["hoy", "obra", "compras", "pagos"]);
 
 export default function ProyectoLayout() {
   const { id = "" } = useParams();
@@ -52,6 +54,7 @@ function Shell() {
           <Link to="/" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"><ArrowLeft className="size-3.5" />Mis proyectos</Link>
           <h1 className="font-semibold leading-tight mt-1 truncate" title={p.meta.nombre}>{p.meta.nombre}</h1>
           <p className="text-xs text-muted-foreground truncate">{p.meta.clientes || "Sin clientes capturados"}</p>
+          <div className="mt-2"><Semaforo nivel={calc.salud.nivel} etiqueta /></div>
         </div>
         <nav className="p-2 space-y-0.5">
           {NAV.map(([k, v, Icon]) => (
@@ -77,8 +80,7 @@ function Shell() {
               <h1 className="font-semibold leading-tight truncate">{p.meta.nombre}</h1>
               <p className="text-[11px] text-muted-foreground num truncate">Pagado {avance}% de {fm(calc.granTotal)}{calc.porPagarObra > 0 ? ` · ${fm(calc.porPagarObra)} en trámite` : ""}</p>
             </div>
-            <NavLink to="proveedores" className={({ isActive }) => cn("p-2 rounded-md", isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground")} aria-label="Proveedores"><Users className="size-5" /></NavLink>
-            <NavLink to="ajustes" className={({ isActive }) => cn("p-2 rounded-md", isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground")} aria-label="Ajustes"><Settings className="size-5" /></NavLink>
+            <Semaforo nivel={calc.salud.nivel} etiqueta />
           </div>
         </header>
 
@@ -96,6 +98,14 @@ function Shell() {
               <Icon className="size-5" />{v}
             </NavLink>
           ))}
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium text-muted-foreground data-[state=open]:text-primary" aria-label="Más"><MoreHorizontal className="size-5" />Más</DropdownMenuTrigger>
+            <DropdownMenuContent side="top" align="end" sideOffset={8} className="mb-1">
+              {NAV.filter(([k]) => !MOVIL.has(k)).map(([k, v, Icon]) => (
+                <DropdownMenuItem key={k} asChild><NavLink to={k}><Icon />{v}</NavLink></DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
       </div>
     </div>

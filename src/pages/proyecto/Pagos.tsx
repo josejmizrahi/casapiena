@@ -27,7 +27,13 @@ export default function Pagos() {
         <Stat label="Sin solicitar" value={fm(Math.max(0, calc.granTotal - calc.pagadoTotal - calc.porPagarObra))} />
       </StatStrip>
       <Segmented value={f} onChange={setF} options={[["todos", "Todos"], ["solicitado", "Solicitados"], ["autorizado", "Autorizados"], ["pagado", "Pagados"]]} />
-      {lista0.length === 0 && <Empty>{f === "todos" ? "No hay pagos todavía. Usa el botón “+ Pago”." : "No hay pagos en ese estado."}</Empty>}
+      {lista0.length === 0 && (
+        <Empty>
+          <p className="font-medium text-foreground">{f === "todos" ? "Todavía no hay pagos" : "No hay pagos en ese estado"}</p>
+          {f === "todos" && <p className="mt-1">Un pago nace como <b>solicitado</b>, el cliente lo <b>autoriza</b> y al final se marca <b>pagado</b>. Se agrupan en relaciones numeradas, que son el documento que se imprime para liberar el dinero.</p>}
+          {f === "todos" && <Button size="sm" className="mt-3" onClick={() => abrir({ tipo: "pago", d: {} })}><Plus />Registrar el primer pago</Button>}
+        </Empty>
+      )}
       {rels.map((r) => {
         const lista = lista0.filter((x) => x.rel === r.n).sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
         if (!lista.length) return null;

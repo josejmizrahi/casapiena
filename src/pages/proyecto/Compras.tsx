@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useProyecto } from "@/hooks/useProyecto";
 import { conceptoForm, useModal } from "@/hooks/useModal";
 import * as api from "@/api";
@@ -36,7 +37,13 @@ export default function Compras() {
       </StatStrip>
       {atrasados.length > 0 && <Alert><b>{atrasados.length} con fecha de entrega vencida:</b> {atrasados.map((x) => x.nombre).join(", ")}</Alert>}
       <Segmented value={f} onChange={setF} options={[["pendientes", "Pendientes"], ["links", "Con link"], ["porComprar", "Por comprar"], ["comprado", "Comprado"], ["transito", "En camino"], ["recibido", "Recibido"], ["instalado", "Instalado"], ["todos", "Todos"]]} />
-      {vista.length === 0 && <Empty>Nada aquí. Abre cualquier concepto y pégale el link de la tienda o la cotización.</Empty>}
+      {vista.length === 0 && (
+        <Empty>
+          <p className="font-medium text-foreground">{items.length === 0 ? "Todavía no hay nada que comprar" : "Nada en este filtro"}</p>
+          <p className="mt-1">Aquí aparece cada concepto con presupuesto, link o estatus de compra. Abre un concepto en Obra, pega el link de la tienda o cotización, pon la fecha estimada de llegada y ve avanzando su estatus.</p>
+          {items.length === 0 && <Button asChild size="sm" variant="outline" className="mt-3"><Link to="../obra" relative="path">Ir a Obra</Link></Button>}
+        </Empty>
+      )}
       {vista.map((c) => {
         const sig = SIGUIENTE[c.logistica];
         const tarde = !!c.eta && c.eta < hoy && !["recibido", "instalado"].includes(c.logistica);

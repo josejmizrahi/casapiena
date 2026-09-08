@@ -11,6 +11,7 @@ export type Modal =
   | { tipo: "rel"; d: { nOriginal?: number; n: number; fecha: string; fechaLimite: string } }
   | { tipo: "exc"; d: Partial<Excedente> }
   | { tipo: "prov"; d: Partial<Proveedor>; onSave?: (id: string) => void }
+  | { tipo: "guia"; seccion?: string }
   | null;
 
 const ModalContext = createContext<{ modal: Modal; abrir: (m: Modal) => void; cerrar: () => void } | null>(null);

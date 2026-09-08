@@ -10,6 +10,8 @@ import { Stat, StatStrip } from "@/components/ui/stat";
 import { StackedBar } from "@/components/ui/progress";
 import { Empty, Row } from "@/components/ui/misc";
 import { Dot, PrioBadge } from "@/components/Etiquetas";
+import { Semaforo } from "./Hoy";
+import { BookOpen } from "lucide-react";
 
 export default function Obra() {
   const { p, calc, nombreProv } = useProyecto();
@@ -22,7 +24,16 @@ export default function Obra() {
         <Stat label="Presupuesto obra" value={fm(p.meta.presupuestoObra)} />
         <Stat label="Diferencia" value={fm(calc.comparativaGlobal)} tone={calc.comparativaGlobal < 0 ? "bad" : "ok"} />
       </StatStrip>
-      {calc.partidas.length === 0 && <Empty>Empieza creando una partida (Cuarto principal, Sala, Cocina…) y dentro sus conceptos.</Empty>}
+      {calc.partidas.length === 0 && (
+        <Empty>
+          <p className="font-medium text-foreground">Aún no hay partidas</p>
+          <p className="mt-1">Una partida agrupa conceptos: un cuarto, la carpintería, las instalaciones. Cada una lleva un candado, el tope que decides no rebasar.</p>
+          <div className="flex justify-center gap-2 mt-3">
+            <Button size="sm" onClick={() => abrir({ tipo: "partida", d: { nombre: "", candado: 0 } })}><Plus />Primera partida</Button>
+            <Button size="sm" variant="outline" onClick={() => abrir({ tipo: "guia", seccion: "candados" })}><BookOpen />Qué es un candado</Button>
+          </div>
+        </Empty>
+      )}
       {calc.partidas.map((pa) => {
         const open = !!abiertas[pa.id];
         const base = Math.max(pa.candadoEf, pa.comprometido) || 1;
@@ -31,6 +42,7 @@ export default function Obra() {
             <CardHeader className="pb-2">
               <button type="button" className="flex items-center gap-2 min-w-0 flex-1 text-left" onClick={() => setAbiertas((a) => ({ ...a, [pa.id]: !open }))}>
                 {open ? <ChevronDown className="size-4 text-muted-foreground shrink-0" /> : <ChevronRight className="size-4 text-muted-foreground shrink-0" />}
+                <Semaforo nivel={pa.nivel} />
                 <h2 className="font-semibold truncate">{pa.nombre}</h2>
                 <span className="text-xs text-muted-foreground shrink-0">{pa.conceptos.length}</span>
               </button>
@@ -48,6 +60,7 @@ export default function Obra() {
               {pa.adelantada && <p className="text-xs text-warn mt-1">Va {pa.avance - calc.avanceGlobal} puntos adelante del avance general ({calc.avanceGlobal}%): ya le pagaste más de lo que corresponde al ritmo de la obra.</p>}
               {open && (
                 <div className="mt-2">
+                  {pa.conceptos.length === 0 && <p className="text-xs text-muted-foreground py-2">Sin conceptos. Agrega cada cosa que se compra o contrata aquí, con su presupuesto sin IVA.</p>}
                   {pa.conceptos.map((c) => (
                     <Row key={c.id} onClick={() => abrir({ tipo: "concepto", d: conceptoForm(c) })} leading={<Dot estado={c.estado} />}
                       left={<>
