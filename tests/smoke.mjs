@@ -28,6 +28,9 @@ const tablas = {
     { id: "g3", proyecto_id: PID, relacion_id: "r1", concepto_id: null, proveedor_id: null, tipo: "honorarios", fase: "1", monto: 5000, fecha: "2026-09-02", forma: "Transferencia", status: "Anticipo", estado: "pagado", de_excedente: false, nota: "" },
   ],
   excedentes: [{ id: "e1", proyecto_id: PID, concepto: "Ahorro", monto: 3000, fecha: "2026-09-03" }],
+  adjuntos: [{ id: "ad1", proyecto_id: PID, concepto_id: conceptos[0].id, pago_id: null, nombre: "cotizacion.pdf", ruta: `${PID}/x.pdf`, tipo: "application/pdf", tamano: 120000, created_at: "2026-09-01T00:00:00Z" }],
+  catalogo_proveedores: [{ id: "cp1", nombre: "Herrería Norte", razon: "", banco: "Banorte", clabe: "999", tel: "", nota: "" }],
+  plantillas: [{ id: "pl1", nombre: "Mi casa tipo", descripcion: "3 recámaras", cuerpo: [{ nombre: "Sala", pct: 50, conceptos: [{ nombre: "Sofá" }] }, { nombre: "Imprevistos", pct: 8, contingencia: true }], created_at: "2026-09-01T00:00:00Z" }],
   traspasos: [{ id: "t1", proyecto_id: PID, de_id: partidas[0].id, a_id: partidas[1].id, monto: 10000, fecha: "2026-09-04", motivo: "ajuste" }],
 };
 
@@ -38,10 +41,11 @@ for (let i = 0; i < 100; i++) { try { await fetch(`http://localhost:${PORT}/`); 
 const salir = (code) => { server.kill(); process.exit(code); };
 
 const browser = await chromium.launch();
+const contexto = await browser.newContext({ serviceWorkers: "block" });
 const errors = [];
 const pasos = [];
 async function conVista(nombre, viewport, fn) {
-  const page = await browser.newPage({ viewport });
+  const page = await contexto.newPage(); await page.setViewportSize(viewport);
   page.on("pageerror", (e) => errors.push(`PAGEERROR (${nombre}): ${e.message}`));
   page.on("console", (m) => { if (m.type() === "error") errors.push(`CONSOLE (${nombre}): ${m.text().slice(0, 300)}`); });
   // las fuentes web no importan para la prueba y no hay red en el sandbox
@@ -53,6 +57,7 @@ async function conVista(nombre, viewport, fn) {
     if (u.pathname.includes("/rpc/")) body = t === "miembros_de" ? JSON.stringify([{ user_id: "u2", email: "socia@casapiena.mx", rol: "editor" }]) : "null";
     else if (r.request().method() !== "GET") body = JSON.stringify(t === "proyectos" ? { id: PID } : [{ id: "nuevo".padEnd(36, "0") }]);
     else if (t === "proyectos") body = JSON.stringify(u.searchParams.get("select") === "*" ? proyecto : [proyecto, { ...proyecto, id: "3".padEnd(36, "3"), nombre: "Otra casa", archivado: true, owner_id: "otro" }]);
+    else if (t === "catalogo_proveedores" || t === "plantillas") body = JSON.stringify(tablas[t]);
     else if (lleno && tablas[t]) body = JSON.stringify(tablas[t]);
     r.fulfill({ status: 200, contentType: "application/json", body });
   });
@@ -108,6 +113,8 @@ for (const [nombre, viewport] of [["movil", { width: 420, height: 860 }], ["escr
         await page.click(`button:has-text("${seed.partidas[0].conceptos[0].nombre}")`);
         await page.waitForSelector("[role=dialog]");
         await page.waitForSelector("text=Precio unitario");
+        await page.waitForSelector("text=Fotos y documentos"); await page.waitForSelector("text=cotizacion.pdf");
+        if (process.env.SHOT) await page.screenshot({ path: `${process.env.SHOT}-${nombre}-dialogo.png` });
         await page.click("[role=dialog] button:has-text('75%')");
         await page.waitForSelector("text=Línea base");
         await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" });
@@ -125,8 +132,19 @@ for (const [nombre, viewport] of [["movil", { width: 420, height: 860 }], ["escr
       await paso("proveedores: abrir", async () => { await ir("proveedores"); await page.click("button:has-text('Muebles SA')"); await dialogo(); });
       await paso("compras: marcar siguiente", async () => { await ir("compras"); await page.click("button:has-text('Marcar')"); });
     }
+    await paso("vista reporte", async () => { await ir("reporte"); await page.waitForSelector("text=Reporte de obra"); await page.waitForSelector("text=Pagos pendientes"); if (process.env.SHOT) await page.screenshot({ path: `${process.env.SHOT}-${nombre}-reporte.png`, fullPage: true }); });
+    await paso("manifest PWA", async () => { const r = await page.request.get(`http://localhost:${PORT}/manifest.webmanifest`); if (!r.ok()) throw new Error("manifest " + r.status()); });
+    if (lleno) await paso("proveedores: nuevo con catálogo", async () => { await ir("proveedores"); await page.click("button:has-text('Proveedor')"); await page.waitForSelector("text=De mi catálogo"); await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" }); });
+    if (lleno) await paso("asistente: mis plantillas", async () => {
+      await page.goto(`http://localhost:${PORT}/`); await page.waitForSelector("text=Casa Piena");
+      await page.click("header button:has-text('Nuevo')"); await page.fill("[role=dialog] input >> nth=0", "Desde plantilla"); await page.click("button:has-text('Siguiente')");
+      await page.waitForSelector("text=Mi casa tipo"); await page.click("button:has-text('Mi casa tipo')"); await page.waitForSelector("[role=dialog] input[value='Sala']");
+      await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" });
+      await page.click(`a[href="#/p/${PID}"] >> nth=0`); await page.waitForSelector("text=Requiere tu atención");
+    });
     await paso("ajustes: miembros y export", async () => {
       await ir("ajustes"); await page.waitForSelector("text=socia@casapiena.mx");
+      await page.click("button:has-text('Guardar como plantilla')"); await page.waitForSelector("text=Nombre de la plantilla"); await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" });
       const d = page.waitForEvent("download", { timeout: 8000 }).catch(() => null);
       await page.click("button:has-text('Exportar Excel')"); await d;
     });

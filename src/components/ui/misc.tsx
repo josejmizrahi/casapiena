@@ -45,7 +45,7 @@ export function Tip({ label, children }: { label: string; children: React.ReactN
     <TooltipPrimitive.Root>
       <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
       <TooltipPrimitive.Portal>
-        <TooltipPrimitive.Content sideOffset={6} className="z-50 rounded-sm bg-foreground px-2 py-1 text-[12px] text-background">{label}</TooltipPrimitive.Content>
+        <TooltipPrimitive.Content sideOffset={6} className="z-50 rounded-[8px] bg-foreground px-2.5 py-1.5 text-[12px] text-background">{label}</TooltipPrimitive.Content>
       </TooltipPrimitive.Portal>
     </TooltipPrimitive.Root>
   );
@@ -55,9 +55,9 @@ export const DropdownMenu = DropdownMenuPrimitive.Root;
 export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
 export const DropdownMenuContent = ({ className, ...p }: React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>) => (
   <DropdownMenuPrimitive.Portal>
-    <DropdownMenuPrimitive.Content sideOffset={4} align="end" className={cn("z-50 min-w-[11rem] rounded-md border border-border-2 bg-panel p-1 shadow-[0_8px_24px_-12px_rgba(23,23,22,.35)]", className)} {...p} />
+    <DropdownMenuPrimitive.Content sideOffset={4} align="end" className={cn("z-50 min-w-[11rem] rounded-[14px] border border-border-2 bg-panel p-1.5 shadow-[0_8px_24px_-12px_rgba(23,23,22,.35)]", className)} {...p} />
   </DropdownMenuPrimitive.Portal>
 );
 export const DropdownMenuItem = ({ className, ...p }: React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item>) => (
-  <DropdownMenuPrimitive.Item className={cn("flex cursor-pointer select-none items-center gap-2.5 rounded-sm px-2.5 py-2.5 md:py-2 text-[14px] outline-none hover:bg-muted data-[highlighted]:bg-muted [&_svg]:size-4 [&_svg]:stroke-[1.75] [&_svg]:text-ink-2", className)} {...p} />
+  <DropdownMenuPrimitive.Item className={cn("flex cursor-pointer select-none items-center gap-2.5 rounded-[9px] px-2.5 py-2.5 md:py-2 text-[14px] outline-none hover:bg-muted data-[highlighted]:bg-muted [&_svg]:size-4 [&_svg]:stroke-[1.75] [&_svg]:text-ink-2", className)} {...p} />
 );

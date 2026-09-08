@@ -56,3 +56,9 @@ export const STATUS_PAGO = ["Anticipo", "Parcialidad", "Finiquito", "Liquidació
 export const UNIDADES = ["pza", "m²", "ml", "m³", "kg", "lote", "juego", "servicio", "hr", "global"];
 /** Diferencia en puntos entre % pagado y % de avance físico a partir de la cual se avisa. */
 export const DESFASE_AVISO = 25;
+
+// ── fase 3 ──
+export interface Adjunto { id: string; proyectoId: string; conceptoId: string | null; pagoId: string | null; nombre: string; ruta: string; tipo: string; tamano: number; createdAt: string }
+export interface CatalogoProveedor { id: string; nombre: string; razon: string; banco: string; clabe: string; tel: string; nota: string }
+export interface PlantillaPartida { nombre: string; pct: number; contingencia?: boolean; conceptos?: { nombre: string; unidad?: string; prioridad?: Prioridad }[] }
+export interface PlantillaGuardada { id: string; nombre: string; descripcion: string; cuerpo: PlantillaPartida[]; created_at: string }

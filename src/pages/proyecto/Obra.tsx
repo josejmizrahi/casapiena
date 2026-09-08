@@ -49,7 +49,7 @@ export default function Obra() {
                 {pa.contingencia && <Badge variant="gold">Reserva</Badge>}
               </button>
               <button type="button" onClick={() => abrir({ tipo: "partida", d: { id: pa.id, nombre: pa.nombre, candado: pa.candado } })}
-                className={cn("inline-flex items-center gap-1.5 border px-2 h-8 text-[12px] font-medium num shrink-0 rounded-sm", pa.excedido ? "border-bad/50 text-bad" : pa.candadoEf ? "border-border-2 text-foreground" : "border-dashed border-border-2 text-ink-3")}>
+                className={cn("inline-flex items-center gap-1.5 border px-2 h-8 text-[12px] font-medium num shrink-0 rounded-[8px]", pa.excedido ? "border-bad/50 text-bad" : pa.candadoEf ? "border-border-2 text-foreground" : "border-dashed border-border-2 text-ink-3")}>
                 <Lock className="size-3 stroke-[1.75]" />{pa.candadoEf ? fm(pa.candadoEf) : "Sin candado"}{pa.recibido || pa.cedido ? " ⇄" : ""}
               </button>
             </CardHeader>

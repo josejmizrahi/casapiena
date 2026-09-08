@@ -2,7 +2,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 // Etiquetas: mono, mayúsculas, sin relleno salvo estados (tinte muy suave).
-const badgeVariants = cva("inline-flex items-center gap-1 rounded-sm px-1.5 py-[3px] font-mono uppercase tracking-[0.08em] text-[9.5px] leading-none whitespace-nowrap border", {
+const badgeVariants = cva("inline-flex items-center gap-1 rounded-[6px] px-1.5 py-[3px] font-mono uppercase tracking-[0.08em] text-[9.5px] leading-none whitespace-nowrap border", {
   variants: {
     variant: {
       neutral: "border-border-2 text-ink-2 bg-transparent",

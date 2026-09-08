@@ -15,8 +15,8 @@ export function DialogContent({ className, children, title, description, ...prop
       <DialogPrimitive.Content
         className={cn(
           "fixed z-50 flex flex-col bg-panel shadow-[0_-1px_0_var(--line-2)] focus:outline-none",
-          "inset-x-0 bottom-0 max-h-[94dvh] rounded-t-lg",
-          "md:inset-auto md:left-1/2 md:top-1/2 md:w-full md:max-w-xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-lg md:max-h-[88vh] md:border md:border-border-2 md:shadow-none",
+          "inset-x-0 bottom-0 max-h-[94dvh] rounded-t-[18px]",
+          "md:inset-auto md:left-1/2 md:top-1/2 md:w-full md:max-w-xl md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-[18px] md:max-h-[88vh] md:border md:border-border-2 md:shadow-none",
           className,
         )}
         {...props}
@@ -27,7 +27,7 @@ export function DialogContent({ className, children, title, description, ...prop
             {description ? <DialogPrimitive.Description className="anno mb-1">{description}</DialogPrimitive.Description> : <DialogPrimitive.Description className="sr-only">{title}</DialogPrimitive.Description>}
             <DialogPrimitive.Title className="text-[19px] font-semibold leading-tight truncate">{title}</DialogPrimitive.Title>
           </div>
-          <DialogPrimitive.Close className="rounded-md p-2 -mr-2 text-ink-2 hover:bg-muted" aria-label="Cerrar"><X className="size-5 stroke-[1.75]" /></DialogPrimitive.Close>
+          <DialogPrimitive.Close className="rounded-full p-2 -mr-2 text-ink-2 hover:bg-muted" aria-label="Cerrar"><X className="size-5 stroke-[1.75]" /></DialogPrimitive.Close>
         </div>
         <div className="overflow-y-auto px-5 py-4 space-y-4" style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}>{children}</div>
       </DialogPrimitive.Content>

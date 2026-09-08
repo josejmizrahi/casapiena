@@ -15,7 +15,8 @@ significa estado (verde, ámbar, rojo, azul). Los tokens viven en `src/index.css
 ## Antes de correr
 
 1. Aplica en el SQL Editor de Supabase, en orden: `schema.sql`, `02_set_motivo.sql`,
-   `03_fix_rls_proyectos.sql`, `04_miembros.sql`, `05_fase2.sql`, `06_linea_base.sql`.
+   `03_fix_rls_proyectos.sql`, `04_miembros.sql`, `05_fase2.sql`, `06_linea_base.sql`, `07_fase3.sql` (este último crea el bucket
+   privado `adjuntos` en Storage y sus políticas).
 2. Crea tu usuario en Supabase → Authentication → Users → **Add user** (correo y
    contraseña, con "Auto confirm"). Desde "Mis proyectos" puedes cambiarla.
 3. Opcional: copia `.env.example` a `.env` y pon tu URL y publishable key. Si no,
@@ -36,6 +37,12 @@ npm test         # recorrido en Chromium con Supabase simulado (requiere npx pla
 cada push a `main`. La app queda en https://josejmizrahi.github.io/casapiena/.
 Usa rutas con `#` (HashRouter) para que funcione en Pages sin configuración extra.
 
+## Sin conexión e instalación
+
+La app es una PWA: desde Safari o Chrome en el teléfono, "Agregar a pantalla de
+inicio". El último proyecto cargado se puede consultar sin red; capturar requiere
+conexión (aparece un aviso arriba).
+
 ## Proyecto inicial
 
 `seed/casapiena_inicial.json` es el respaldo del proyecto "Casa Piena — Mobiliario"
@@ -51,6 +58,8 @@ src/
   lib/importar.ts     importación de respaldo JSON validada con zod
   lib/exportar.ts     Excel (carga xlsx bajo demanda) y respaldo JSON
   components/Graficas.tsx  flujo de caja, comprometido contra candado y avance, en SVG
+  components/Adjuntos.tsx  fotos y documentos por concepto o pago (Supabase Storage)
+  pages/proyecto/Reporte.tsx  reporte imprimible para el cliente (Guardar como PDF)
   hooks/              sesión, proyecto (query + acciones) y diálogos
   components/ui/      componentes base (button, card, dialog, input, badge…)
   pages/              Login, Mis proyectos y las 7 vistas del proyecto
