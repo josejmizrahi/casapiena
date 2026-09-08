@@ -5,7 +5,8 @@ React + Vite, con Supabase como backend (Postgres + auth con correo y contraseñ
 
 ## Antes de correr
 
-1. Aplica `schema.sql` (ya lo hiciste) y luego `02_set_motivo.sql` en el SQL Editor.
+1. Aplica `schema.sql` y luego `02_set_motivo.sql` en el SQL Editor. Si la base ya
+   existía antes de septiembre 2026, aplica también `03_fix_rls_proyectos.sql`.
 2. Crea tu usuario en Supabase → Authentication → Users → **Add user** (correo y
    contraseña, con "Auto confirm"). La app entra con correo y contraseña; desde
    la pantalla de proyectos puedes cambiarla.
