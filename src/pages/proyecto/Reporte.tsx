@@ -47,7 +47,7 @@ export default function Reporte() {
       </div>
 
       <Sec t="Partidas">
-        <table className="w-full">
+        <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0"><table className="w-full min-w-[560px]">
           <thead><tr><Th>Partida</Th><Th r>Candado</Th><Th r>Comprometido</Th><Th r>Pagado</Th>{calc.conAvance && <Th r>Hecho</Th>}<Th r>vs base</Th></tr></thead>
           <tbody>
             {calc.partidas.map((x) => (
@@ -64,7 +64,7 @@ export default function Reporte() {
               <Td>Obra</Td><Td r>{fm(calc.totalCandados)}</Td><Td r>{fm(calc.totalObra)}</Td><Td r>{fm(calc.pagadoObra)} <span className="text-ink-3 font-normal">{pct(calc.pagadoObra, calc.totalObra)}%</span></Td>{calc.conAvance && <Td r>{calc.avanceFisicoObra}%</Td>}<Td r className={calc.desviacionObra > 0 ? "text-bad" : "text-ok"}>{Math.abs(calc.desviacionObra) > 0.005 ? `${calc.desviacionObra > 0 ? "+" : ""}${fm(calc.desviacionObra)}` : "—"}</Td>
             </tr>
           </tbody>
-        </table>
+        </table></div>
       </Sec>
 
       {calc.contingencia.hay && (
