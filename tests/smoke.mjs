@@ -54,7 +54,7 @@ async function conVista(nombre, viewport, fn) {
   await page.route("**/rest/v1/**", (r) => {
     const u = new URL(r.request().url()); const t = u.pathname.split("/").pop();
     let body = "[]";
-    if (u.pathname.includes("/rpc/")) body = t === "miembros_de" ? JSON.stringify([{ user_id: "u2", email: "socia@casapiena.mx", rol: "editor" }]) : "null";
+    if (u.pathname.includes("/rpc/")) body = t === "miembros_de" ? JSON.stringify([{ user_id: "u2", email: "socia@casapiena.mx", rol: "editor", pendiente: false }, { user_id: null, email: "cliente@casapiena.mx", rol: "lector", pendiente: true }]) : t === "agregar_miembro" ? JSON.stringify("invitado") : "null";
     else if (r.request().method() !== "GET") body = JSON.stringify(t === "proyectos" ? { id: PID } : [{ id: "nuevo".padEnd(36, "0") }]);
     else if (t === "proyectos") body = JSON.stringify(u.searchParams.get("select") === "*" ? proyecto : [proyecto, { ...proyecto, id: "3".padEnd(36, "3"), nombre: "Otra casa", archivado: true, owner_id: "otro" }]);
     else if (t === "catalogo_proveedores" || t === "plantillas") body = JSON.stringify(tablas[t]);
@@ -77,6 +77,7 @@ async function conVista(nombre, viewport, fn) {
 await conVista("login", { width: 420, height: 860 }, async (page, paso) => {
   await page.addInitScript(() => localStorage.clear());
   await paso("pantalla de entrada", async () => { await page.goto(`http://localhost:${PORT}/`); await page.waitForSelector("input[type=email]", { timeout: 8000 }); });
+  await paso("crear cuenta (modo)", async () => { await page.click("button:has-text('Crear cuenta')"); await page.waitForSelector("text=Elige una contraseña"); await page.click("button:has-text('Ya tengo cuenta')"); await page.waitForSelector("button:has-text('Entrar')"); });
 });
 
 for (const [nombre, viewport] of [["movil", { width: 420, height: 860 }], ["escritorio", { width: 1280, height: 900 }]]) {
@@ -143,7 +144,8 @@ for (const [nombre, viewport] of [["movil", { width: 420, height: 860 }], ["escr
       await page.click(`a[href="#/p/${PID}"] >> nth=0`); await page.waitForSelector("text=Requiere tu atención");
     });
     await paso("ajustes: miembros y export", async () => {
-      await ir("ajustes"); await page.waitForSelector("text=socia@casapiena.mx");
+      await ir("ajustes"); await page.waitForSelector("text=socia@casapiena.mx"); await page.waitForSelector("text=Invitación pendiente");
+      await page.fill("input[type=email]", "nueva@casapiena.mx"); await page.click("button:has-text('Agregar')"); await page.waitForSelector("text=Copiar invitación");
       await page.click("button:has-text('Guardar como plantilla')"); await page.waitForSelector("text=Nombre de la plantilla"); await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" });
       const d = page.waitForEvent("download", { timeout: 8000 }).catch(() => null);
       await page.click("button:has-text('Exportar Excel')"); await d;

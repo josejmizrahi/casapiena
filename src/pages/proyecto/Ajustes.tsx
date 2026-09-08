@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Download, FileJson, LayoutTemplate, LogOut, Trash2, UserPlus } from "lucide-react";
+import { Copy, Download, FileJson, LayoutTemplate, LogOut, Trash2, UserPlus } from "lucide-react";
 import { useProyecto } from "@/hooks/useProyecto";
 import { useSesion } from "@/hooks/useSesion";
 import * as api from "@/api";
@@ -91,24 +91,47 @@ function Miembros() {
   const [rol, setRol] = useState("editor");
   const [cargando, setCargando] = useState(false);
   const refrescar = () => qc.invalidateQueries({ queryKey: ["miembros", p.id] });
+  const [ultimo, setUltimo] = useState<string | null>(null);
+  const textoInvitacion = (email: string) => `Te invité al proyecto "${p.meta.nombre}" en Control de obra.\n1. Entra a ${location.origin}${location.pathname}\n2. Toca "Crear cuenta" y usa este correo: ${email}\n3. El proyecto te aparece solo en tu lista.`;
+  const copiar = async (email: string) => {
+    try { await navigator.clipboard.writeText(textoInvitacion(email)); toast.success("Invitación copiada. Pégala en WhatsApp o correo."); }
+    catch { toast.error("No se pudo copiar"); }
+  };
   const agregar = async () => {
     setCargando(true);
-    try { await api.agregarMiembro(p.id, correo.trim(), rol); setCorreo(""); refrescar(); toast.success("Miembro agregado"); }
+    try {
+      const r = await api.agregarMiembro(p.id, correo.trim(), rol);
+      const c = correo.trim().toLowerCase();
+      setCorreo(""); refrescar();
+      if (r === "invitado") { setUltimo(c); toast.success("Invitación guardada", { description: "Cuando cree su cuenta con ese correo verá el proyecto." }); }
+      else toast.success("Miembro agregado");
+    }
     catch (e) { toast.error("No se pudo agregar", { description: e instanceof Error ? e.message : String(e) }); }
     finally { setCargando(false); }
   };
-  const quitar = async (userId: string) => {
-    try { await api.quitarMiembro(p.id, userId); refrescar(); } catch (e) { toast.error(e instanceof Error ? e.message : String(e)); }
+  const quitar = async (mi: { user_id: string | null; email: string; pendiente: boolean }) => {
+    try { if (mi.pendiente) await api.quitarInvitacion(p.id, mi.email); else if (mi.user_id) await api.quitarMiembro(p.id, mi.user_id); refrescar(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : String(e)); }
   };
   return (
     <Card>
-      <CardHeader><div><CardTitle>Quién puede ver este proyecto</CardTitle><CardDescription>Editor captura y modifica; lector solo consulta. La persona debe haber entrado a la app al menos una vez.</CardDescription></div></CardHeader>
+      <CardHeader><div><CardTitle>Quién puede ver este proyecto</CardTitle><CardDescription>Editor captura y modifica; lector solo consulta. Si la persona aún no tiene cuenta, queda invitada: al crearla con ese correo, el proyecto le aparece solo.</CardDescription></div></CardHeader>
       <CardContent className="space-y-3">
         <Row left={<div className="text-sm">{sesion?.user.email}</div>} right={<Badge>Tú</Badge>} />
         {data?.map((mi) => (
-          <Row key={mi.user_id} left={<div className="text-sm truncate">{mi.email}</div>}
-            right={<div className="flex items-center gap-2"><Badge variant={mi.rol === "lector" ? "neutral" : "info"}>{mi.rol}</Badge><Button size="icon" variant="ghost" className="size-7 text-bad" aria-label="Quitar" onClick={() => confirm(`¿Quitar a ${mi.email}?`) && quitar(mi.user_id)}><Trash2 /></Button></div>} />
+          <Row key={mi.user_id || mi.email} left={<><div className="text-sm truncate">{mi.email}</div>{mi.pendiente && <div className="text-[11.5px] text-ink-3">Invitación pendiente · aún no crea su cuenta</div>}</>}
+            right={<div className="flex items-center gap-1.5">
+              <Badge variant={mi.pendiente ? "warn" : mi.rol === "lector" ? "neutral" : "info"}>{mi.rol}</Badge>
+              {mi.pendiente && <Button size="icon" variant="ghost" className="size-8" aria-label="Copiar invitación" onClick={() => copiar(mi.email)}><Copy /></Button>}
+              <Button size="icon" variant="ghost" className="size-8 text-bad" aria-label="Quitar" onClick={() => confirm(`¿Quitar a ${mi.email}?`) && quitar(mi)}><Trash2 /></Button>
+            </div>} />
         ))}
+        {ultimo && (
+          <div className="border-l-2 border-warn pl-3 py-1 text-[13px] space-y-2">
+            <p>{ultimo} todavía no tiene cuenta. Mándale la invitación con las instrucciones para crearla.</p>
+            <Button size="sm" variant="outline" onClick={() => copiar(ultimo)}><Copy />Copiar invitación</Button>
+          </div>
+        )}
         {error && <p className="text-xs text-bad">{(error as Error).message}</p>}
         <div className="flex flex-wrap gap-2">
           <Input type="email" placeholder="correo@ejemplo.com" value={correo} onChange={(e) => setCorreo(e.target.value)} className="flex-1 min-w-[200px]" />
