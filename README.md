@@ -1,13 +1,14 @@
 # Control de obra
 
 App de control de presupuesto, pagos, compras y proveedores de obra.
-React + Vite, con Supabase como backend (Postgres + auth por magic link).
+React + Vite, con Supabase como backend (Postgres + auth con correo y contraseña).
 
 ## Antes de correr
 
 1. Aplica `schema.sql` (ya lo hiciste) y luego `02_set_motivo.sql` en el SQL Editor.
-2. En Supabase → Authentication → URL Configuration, agrega tu dominio de Vercel
-   y `http://localhost:5173` en **Redirect URLs**.
+2. Crea tu usuario en Supabase → Authentication → Users → **Add user** (correo y
+   contraseña, con "Auto confirm"). La app entra con correo y contraseña; desde
+   la pantalla de proyectos puedes cambiarla.
 3. Copia `.env.example` a `.env` y pon tu publishable key
    (Supabase → Project Settings → API → anon/publishable).
 
@@ -29,9 +30,7 @@ npm run dev
 1. Crea un repo y sube esta carpeta (rama `main`).
 2. En el repo: Settings → Pages → Source = **GitHub Actions**.
 3. El workflow `.github/workflows/pages.yml` compila y publica en cada push.
-4. Copia la URL que queda (`https://usuario.github.io/repo/`) y pégala en
-   Supabase → Authentication → URL Configuration, en **Site URL** y en
-   **Redirect URLs**. Sin eso el magic link no regresa a la app.
+4. La app queda en `https://usuario.github.io/repo/`.
 
 La URL y la publishable key de Supabase vienen incrustadas como respaldo, así que
 funciona sin configurar nada. Si prefieres no tenerlas en el código, ponlas en
