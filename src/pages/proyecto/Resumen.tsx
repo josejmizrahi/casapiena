@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { PrioBadge } from "@/components/Etiquetas";
 
 const Graficas = lazy(() => import("@/components/Graficas"));
+const AvanceChart = lazy(() => import("@/components/Graficas").then((m) => ({ default: m.AvanceChart })));
 
 export default function Resumen() {
   const { p, calc, accion } = useProyecto();
@@ -21,12 +22,12 @@ export default function Resumen() {
   const recortable = calc.porPrioridad.filter((x) => x.k === "opcional" || x.k === "exhibicion").reduce((s, x) => s + x.monto - x.pagado, 0);
   return (
     <>
-      <div className="rounded-2xl bg-primary text-primary-foreground p-5 space-y-2">
-        <div className="text-xs opacity-75">Gran total (obra + honorarios {p.meta.pctHonorarios}%)</div>
-        <div className="text-3xl font-bold num">{fm(calc.granTotal)}</div>
-        <StackedBar pagado={avance} tramite={pct(calc.porPagarObra, calc.granTotal)} light />
-        <div className="flex justify-between text-xs opacity-90 num"><span>Pagado {fm(calc.pagadoTotal)} ({avance}%)</span><span>En trámite {fm(calc.porPagarObra)}</span></div>
-        {calc.conAvance && <div className="flex justify-between text-xs opacity-90 num pt-1"><span>Avance físico de obra {calc.avanceFisicoObra}%</span><span className={pct(calc.pagadoObra, calc.totalObra) - calc.avanceFisicoObra >= 25 ? "font-semibold" : ""}>Pagado de obra {pct(calc.pagadoObra, calc.totalObra)}%</span></div>}
+      <div className="pt-1">
+        <div className="anno">Gran total · obra + honorarios {p.meta.pctHonorarios}%</div>
+        <div className="mt-2 text-[40px] md:text-[48px] font-semibold fig leading-none">{fm(calc.granTotal)}</div>
+        <StackedBar pagado={avance} tramite={pct(calc.porPagarObra, calc.granTotal)} className="mt-4" />
+        <div className="flex justify-between mt-2 text-[12px] text-ink-2 num"><span>Pagado {fm(calc.pagadoTotal)} · {avance}%</span><span>En trámite {fm(calc.porPagarObra)}</span></div>
+        {calc.conAvance && <div className="flex justify-between mt-1 text-[12px] text-ink-2 num"><span>Avance físico de obra {calc.avanceFisicoObra}%</span><span className={pct(calc.pagadoObra, calc.totalObra) - calc.avanceFisicoObra >= 25 ? "text-warn font-medium" : ""}>Pagado de obra {pct(calc.pagadoObra, calc.totalObra)}%</span></div>}
       </div>
       {calc.contingencia.hay && (
         <Card>
@@ -43,37 +44,24 @@ export default function Resumen() {
         <Card>
           <CardHeader><div><CardTitle>Línea base contra actual</CardTitle><CardDescription>Lo que se presupuestó al inicio contra lo que hoy está comprometido. Los motivos están en la bitácora de cada concepto.</CardDescription></div></CardHeader>
           <CardContent className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead><tr className="text-xs text-muted-foreground"><th className="text-left font-medium pb-1">Partida</th><th className="text-right font-medium pb-1">Base</th><th className="text-right font-medium pb-1">Actual</th><th className="text-right font-medium pb-1">Desviación</th></tr></thead>
+            <table className="w-full table-fixed"><colgroup><col /><col className="w-[24%]" /><col className="w-[24%]" /><col className="w-[26%]" /></colgroup>
+              <thead><tr className="anno text-left"><th className="font-normal pb-1.5">Partida</th><th className="text-right font-normal pb-1.5">Base</th><th className="text-right font-normal pb-1.5">Actual</th><th className="text-right font-normal pb-1.5">Desviación</th></tr></thead>
               <tbody>
                 {calc.partidas.filter((x) => x.comprometido > 0 || x.baseTotal > 0).map((x) => (
-                  <tr key={x.id} className="border-t border-border num">
-                    <td className="py-1.5 pr-2 truncate max-w-[10rem]">{x.nombre}</td>
-                    <td className="py-1.5 text-right text-muted-foreground">{fm(x.baseTotal)}</td>
-                    <td className="py-1.5 text-right">{fm(x.comprometido)}</td>
-                    <td className={"py-1.5 text-right font-medium " + (x.desviacion > 0.005 ? "text-bad" : x.desviacion < -0.005 ? "text-ok" : "text-muted-foreground")}>{x.desviacion > 0 ? "+" : ""}{fm(x.desviacion)}</td>
+                  <tr key={x.id} className="border-t border-border num text-[13px]">
+                    <td className="py-1.5 pr-2 truncate max-w-[7rem] sm:max-w-[12rem]">{x.nombre}</td>
+                    <td className="py-1.5 pl-2 text-right text-ink-3 whitespace-nowrap">{fm(x.baseTotal)}</td>
+                    <td className="py-1.5 pl-2 text-right whitespace-nowrap">{fm(x.comprometido)}</td>
+                    <td className={"py-1.5 pl-2 text-right font-medium whitespace-nowrap " + (x.desviacion > 0.005 ? "text-bad" : x.desviacion < -0.005 ? "text-ok" : "text-ink-3")}>{x.desviacion > 0 ? "+" : ""}{fm(x.desviacion)}</td>
                   </tr>
                 ))}
-                <tr className="border-t border-border num font-semibold"><td className="py-1.5">Obra</td><td className="py-1.5 text-right text-muted-foreground">{fm(calc.baseObra)}</td><td className="py-1.5 text-right">{fm(calc.totalObra)}</td><td className={"py-1.5 text-right " + (calc.desviacionObra > 0 ? "text-bad" : "text-ok")}>{calc.desviacionObra > 0 ? "+" : ""}{fm(calc.desviacionObra)}</td></tr>
+                <tr className="border-t border-border-2 num font-semibold text-[13px]"><td className="py-2">Obra</td><td className="py-2 pl-2 text-right text-ink-3 whitespace-nowrap">{fm(calc.baseObra)}</td><td className="py-2 pl-2 text-right whitespace-nowrap">{fm(calc.totalObra)}</td><td className={"py-2 pl-2 text-right whitespace-nowrap " + (calc.desviacionObra > 0 ? "text-bad" : "text-ok")}>{calc.desviacionObra > 0 ? "+" : ""}{fm(calc.desviacionObra)}</td></tr>
               </tbody>
             </table>
           </CardContent>
         </Card>
       )}
-      {calc.conAvance && (
-        <Card>
-          <CardHeader><div><CardTitle>Avance físico contra pagado</CardTitle><CardDescription>Cuando lo pagado va muy por delante de lo hecho, estás financiando al proveedor.</CardDescription></div></CardHeader>
-          <CardContent>
-            {calc.partidas.filter((x) => x.comprometido > 0).map((x) => (
-              <div key={x.id} className="py-2 border-t border-border first:border-t-0">
-                <div className="flex justify-between text-sm"><span className="truncate">{x.nombre}</span><span className={"num text-xs " + (x.avance - x.avanceFisico >= 25 ? "text-warn font-semibold" : "text-muted-foreground")}>hecho {x.avanceFisico}% · pagado {x.avance}%</span></div>
-                <div className="mt-1 space-y-1"><StackedBar pagado={x.avanceFisico} tramite={0} className="h-1.5" /><StackedBar pagado={0} tramite={x.avance} className="h-1.5" /></div>
-              </div>
-            ))}
-            <p className="text-[11px] text-muted-foreground mt-2">Barra verde: avance físico. Barra clara: pagado.</p>
-          </CardContent>
-        </Card>
-      )}
+      {calc.conAvance && <Suspense fallback={null}><AvanceChart /></Suspense>}
       {calc.comparativaGlobal < 0 && p.meta.presupuestoObra > 0 && <Alert tone="bad"><b>Te pasas del presupuesto de obra por {fm(-calc.comparativaGlobal)}.</b></Alert>}
       {excedidas.length > 0 && <Alert><b>{excedidas.length} partida{excedidas.length > 1 ? "s" : ""} sobre su candado:</b> {excedidas.map((x) => `${x.nombre} (+${fm(-x.comparativa)})`).join(", ")}</Alert>}
       {adelantadas.length > 0 && <Alert tone="info"><b>Pagos adelantados al avance:</b> {adelantadas.map((x) => `${x.nombre} (${x.avance}%)`).join(", ")} · avance general {calc.avanceGlobal}%</Alert>}
@@ -82,13 +70,13 @@ export default function Resumen() {
         <Card>
           <CardHeader><div><CardTitle>Qué tanto pesa lo prescindible</CardTitle><CardDescription>Si tienes que recortar, esto es lo que hay sobre la mesa.</CardDescription></div></CardHeader>
           <CardContent>
-            {calc.porPrioridad.map((x) => <KV key={x.k} k={<span className="flex items-center gap-2"><PrioBadge p={x.k} />{x.k === "sinClasificar" && <span>Sin clasificar</span>}<span className="text-xs">{x.conceptos} concepto{x.conceptos === 1 ? "" : "s"}</span></span>} v={<>{fm(x.monto)}{calc.totalObra > 0 && <span className="text-muted-foreground font-normal"> · {pct(x.monto, calc.totalObra)}%</span>}</>} />)}
-            {recortable > 0 && <p className="text-xs text-muted-foreground mt-2 num">Sin pagar en opcionales y exhibiciones: {fm(recortable)}.</p>}
+            {calc.porPrioridad.map((x) => <KV key={x.k} k={<span className="flex items-center gap-2"><PrioBadge p={x.k} />{x.k === "sinClasificar" && <span>Sin clasificar</span>}<span className="text-xs">{x.conceptos} concepto{x.conceptos === 1 ? "" : "s"}</span></span>} v={<>{fm(x.monto)}{calc.totalObra > 0 && <span className="text-ink-3 font-normal"> · {pct(x.monto, calc.totalObra)}%</span>}</>} />)}
+            {recortable > 0 && <p className="text-xs text-ink-3 mt-2 num">Sin pagar en opcionales y exhibiciones: {fm(recortable)}.</p>}
           </CardContent>
         </Card>
       )}
 
-      <Suspense fallback={<Card><CardContent className="text-sm text-muted-foreground">Cargando gráficas…</CardContent></Card>}>
+      <Suspense fallback={<div className="anno py-4">Cargando gráficas…</div>}>
         <Graficas />
       </Suspense>
 
@@ -104,8 +92,8 @@ export default function Resumen() {
       </Card>
       <Card>
         <CardContent className="pt-4">
-          <KV k="Pagado obra" v={<>{fm(calc.pagadoObra)} <span className="text-muted-foreground font-normal">({pct(calc.pagadoObra, calc.totalObra)}%)</span></>} />
-          <KV k="Pagado honorarios" v={<>{fm(calc.pagadoHonorarios)} <span className="text-muted-foreground font-normal">({pct(calc.pagadoHonorarios, calc.honorarios)}%)</span></>} />
+          <KV k="Pagado obra" v={<>{fm(calc.pagadoObra)} <span className="text-ink-3 font-normal">({pct(calc.pagadoObra, calc.totalObra)}%)</span></>} />
+          <KV k="Pagado honorarios" v={<>{fm(calc.pagadoHonorarios)} <span className="text-ink-3 font-normal">({pct(calc.pagadoHonorarios, calc.honorarios)}%)</span></>} />
           <KV k="Efectivo" v={fm(suma((x) => x.forma === "Efectivo"))} />
           <KV k="Transferencia" v={fm(suma((x) => x.forma === "Transferencia"))} />
           <KV k="Excedente en efectivo a favor" v={fm(calc.excedenteDiferencia)} />
@@ -116,7 +104,7 @@ export default function Resumen() {
           <CardHeader><CardTitle>Traspasos de candado</CardTitle></CardHeader>
           <CardContent>
             {p.traspasos.map((t) => (
-              <Row key={t.id} left={<><div className="text-sm font-medium">{nombrePa(t.deId)} → {nombrePa(t.aId)}</div><div className="text-xs text-muted-foreground">{fecha(t.fecha)}{t.motivo ? ` · ${t.motivo}` : ""}</div></>}
+              <Row key={t.id} left={<><div className="text-sm font-medium">{nombrePa(t.deId)} → {nombrePa(t.aId)}</div><div className="text-xs text-ink-3">{fecha(t.fecha)}{t.motivo ? ` · ${t.motivo}` : ""}</div></>}
                 right={<div className="flex items-center gap-2"><span className="text-sm font-semibold">{fm(t.monto)}</span><Button size="icon" variant="ghost" className="size-7 text-bad" aria-label="Borrar traspaso" onClick={() => confirm("¿Borrar este traspaso?") && accion(() => api.borrarTraspaso(t.id))}><X /></Button></div>} />
             ))}
           </CardContent>

@@ -10,5 +10,5 @@ export const LogBadge = ({ l }: { l: Logistica }) => <Badge variant={TONO_LOG[l 
 export const FlujoBadge = ({ e }: { e: EstadoPago }) => <Badge variant={TONO_FLUJO[e]}>{FLUJO[e]}</Badge>;
 export const FormaBadge = ({ f }: { f: FormaPago }) => <Badge variant={f === "Efectivo" ? "ok" : "info"}>{f}</Badge>;
 export const Dot = ({ estado }: { estado: string }) => (
-  <span className={"size-2.5 rounded-full shrink-0 " + (estado === "cerrado" ? "bg-ok" : estado === "porCerrar" ? "bg-warn" : "bg-border")} />
+  <span className={"size-2 shrink-0 " + (estado === "cerrado" ? "bg-ok" : estado === "porCerrar" ? "bg-warn" : "bg-border-2")} title={estado === "cerrado" ? "Presupuesto cerrado" : estado === "porCerrar" ? "Próximo a cerrar" : "Faltan presupuestos"} />
 );

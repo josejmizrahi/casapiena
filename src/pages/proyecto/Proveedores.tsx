@@ -36,7 +36,7 @@ export default function Proveedores() {
         <CardContent className="pt-2">
           {lista.map((v) => (
             <Row key={v.id} onClick={() => abrir({ tipo: "prov", d: v })}
-              left={<><div className="text-sm font-medium truncate">{v.nombre}</div><div className="text-xs text-muted-foreground">{v.nConceptos} concepto{v.nConceptos === 1 ? "" : "s"}{v.clabe ? " · CLABE guardada" : " · sin datos bancarios"}</div></>}
+              left={<><div className="text-sm font-medium truncate">{v.nombre}</div><div className="text-xs text-ink-3">{v.nConceptos} concepto{v.nConceptos === 1 ? "" : "s"}{v.clabe ? " · CLABE guardada" : " · sin datos bancarios"}</div></>}
               right={<><div className="text-sm font-semibold">{fm(v.comp)}</div>{v.saldo > 0.005 ? <div className="text-[11px] text-warn">saldo {fm(v.saldo)}</div> : <div className="text-[11px] text-ok">liquidado</div>}</>} />
           ))}
           <Button variant="dashed" className="mt-2" onClick={() => abrir({ tipo: "prov", d: {} })}><Plus />Proveedor</Button>

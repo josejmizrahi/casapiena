@@ -57,13 +57,13 @@ export function PagoDialog({ d0 }: { d0: Partial<api.PagoForm> }) {
         {d.forma === "Efectivo" && <Checkbox label="Se toma del excedente en efectivo a favor" checked={!!d.deExcedente} onCheckedChange={(v) => set("deExcedente", !!v)} />}
         <Field label="Nota"><Input value={d.nota} onChange={(e) => set("nota", e.target.value)} /></Field>
         {con && con.total > 0 && (
-          <div className={cn("rounded-xl border px-3 py-1", sobrepasa ? "bg-bad-bg border-bad/30" : "bg-muted/60")}>
+          <div className={cn("rounded-md border px-3 py-1", sobrepasa ? "bg-bad-bg border-bad/30" : "bg-panel border-border")}>
             <KV k="Total del concepto" v={fm2(con.total)} />
             <KV k="Pagado antes de este" v={fm2(yaPagado)} />
             <KV k={sobrepasa ? "Se pasa del total por" : "Quedaría por pagar"} v={fm2(Math.abs(con.total - yaPagado - d.monto))} tone={sobrepasa ? "bad" : undefined} />
           </div>
         )}
-        {con && con.total === 0 && <p className="text-xs text-muted-foreground">Este concepto no tiene presupuesto capturado; el pago se registra pero no se puede comparar.</p>}
+        {con && con.total === 0 && <p className="text-xs text-ink-3">Este concepto no tiene presupuesto capturado; el pago se registra pero no se puede comparar.</p>}
         <DialogActions>
           {d.id && <Button variant="destructive" onClick={borrar}>Borrar</Button>}
           <Button variant="outline" onClick={cerrar}>Cancelar</Button>

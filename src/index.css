@@ -1,80 +1,88 @@
 @import "tailwindcss";
 
-/* Tokens de diseño (estilo shadcn). Paleta cálida neutra con acento verde bosque
-   y dorado para candados; funciona en pantallas de obra y en impresión. */
+/* ──────────────────────────────────────────────────────────────
+   Sistema visual: papel y tinta. Hairlines en vez de cajas, una sola
+   tipografía (Geist) con su mono para anotaciones, color solo donde
+   significa algo (estado). Mobile first: todo se define para 390px y
+   crece a partir de md.
+   ────────────────────────────────────────────────────────────── */
 :root {
-  --background: oklch(0.975 0.004 95);
-  --foreground: oklch(0.22 0.01 80);
-  --card: oklch(1 0 0);
-  --card-foreground: var(--foreground);
-  --muted: oklch(0.955 0.005 95);
-  --muted-foreground: oklch(0.5 0.012 80);
-  --border: oklch(0.9 0.006 95);
-  --input: var(--border);
-  --ring: oklch(0.45 0.09 160);
-  --primary: oklch(0.32 0.03 160);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.94 0.008 95);
-  --secondary-foreground: var(--foreground);
-  --accent: oklch(0.93 0.02 150);
-  --accent-foreground: oklch(0.3 0.06 160);
-  --destructive: oklch(0.55 0.19 25);
-  --destructive-foreground: oklch(0.985 0 0);
-  --ok: oklch(0.5 0.12 155);
-  --ok-bg: oklch(0.94 0.04 155);
-  --warn: oklch(0.6 0.13 70);
-  --warn-bg: oklch(0.95 0.05 85);
-  --bad: oklch(0.55 0.19 25);
-  --bad-bg: oklch(0.95 0.04 25);
-  --info: oklch(0.48 0.09 240);
-  --info-bg: oklch(0.94 0.03 240);
-  --gold: oklch(0.6 0.12 80);
-  --gold-bg: oklch(0.95 0.06 90);
-  --radius: 0.75rem;
+  --paper: #F4F3EF;        /* plano de la página */
+  --panel: #FBFAF8;        /* superficie de contenido y gráficas */
+  --ink: #171716;
+  --ink-2: #5D5B55;
+  --ink-3: #8E8B83;        /* anotaciones, ejes */
+  --line: #E2E0D9;         /* hairline */
+  --line-2: #C9C6BD;       /* hairline fuerte, baseline */
+  --wash: #EDEBE5;         /* relleno de pista, hover */
+
+  --ok: #2F6B47;    --ok-bg: #E9F0EA;
+  --warn: #B4821A;  --warn-bg: #F6EEDC;
+  --bad: #B23A2A;   --bad-bg: #F6E4E0;
+  --info: #3B5B7A;  --info-bg: #E6EBF0;
+
+  --serie-1: #171716;      /* tinta: lo real (comprometido, pagado, hecho) */
+  --serie-2: #A8A49A;      /* gris cálido: lo previsto, la pista */
+
+  --radius: 4px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-ok: var(--ok);
-  --color-ok-bg: var(--ok-bg);
-  --color-warn: var(--warn);
-  --color-warn-bg: var(--warn-bg);
-  --color-bad: var(--bad);
-  --color-bad-bg: var(--bad-bg);
-  --color-info: var(--info);
-  --color-info-bg: var(--info-bg);
-  --color-gold: var(--gold);
-  --color-gold-bg: var(--gold-bg);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --color-background: var(--paper);
+  --color-foreground: var(--ink);
+  --color-card: var(--panel);
+  --color-card-foreground: var(--ink);
+  --color-muted: var(--wash);
+  --color-muted-foreground: var(--ink-3);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-panel: var(--panel);
+  --color-wash: var(--wash);
+  --color-border: var(--line);
+  --color-border-2: var(--line-2);
+  --color-input: var(--line-2);
+  --color-ring: var(--ink);
+  --color-primary: var(--ink);
+  --color-primary-foreground: var(--panel);
+  --color-secondary: var(--panel);
+  --color-secondary-foreground: var(--ink);
+  --color-accent: var(--wash);
+  --color-accent-foreground: var(--ink);
+  --color-destructive: var(--bad);
+  --color-destructive-foreground: var(--panel);
+  --color-ok: var(--ok);     --color-ok-bg: var(--ok-bg);
+  --color-warn: var(--warn); --color-warn-bg: var(--warn-bg);
+  --color-bad: var(--bad);   --color-bad-bg: var(--bad-bg);
+  --color-info: var(--info); --color-info-bg: var(--info-bg);
+  --color-gold: var(--warn); --color-gold-bg: var(--warn-bg);
+  --color-serie-1: var(--serie-1);
+  --color-serie-2: var(--serie-2);
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
 @layer base {
-  * { @apply border-border outline-ring/50; }
-  html { -webkit-font-smoothing: antialiased; }
-  body { @apply bg-background text-foreground font-sans text-[15px] leading-snug; }
+  * { @apply border-border; outline-color: color-mix(in oklab, var(--ink) 40%, transparent); }
+  html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  body { @apply bg-background text-foreground font-sans; font-size: 15px; line-height: 1.4; font-feature-settings: "ss01", "cv11"; }
+  h1, h2, h3 { letter-spacing: -0.01em; }
+  /* columnas de números: alineadas; cifras grandes: proporcionales */
   .num { font-variant-numeric: tabular-nums; }
-  input[type="date"] { min-height: 2.5rem; }
+  .fig { font-variant-numeric: proportional-nums; letter-spacing: -0.02em; }
+  /* anotación estilo plano: mono, mayúsculas, espaciado */
+  .anno { @apply font-mono uppercase text-muted-foreground; font-size: 10.5px; letter-spacing: 0.1em; line-height: 1.2; }
+  input[type="date"] { min-height: 2.75rem; }
+  input::placeholder, textarea::placeholder { color: var(--ink-3); }
+  button { -webkit-tap-highlight-color: transparent; }
 }
+
+/* Sección: regla superior + anotación, sin caja. */
+.sec { @apply border-t border-border pt-3; }
+.sec > .anno { @apply block mb-2; }
 
 /* Impresión de relaciones: solo se ve el documento */
 .print-only { display: none; }

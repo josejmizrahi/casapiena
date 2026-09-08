@@ -35,9 +35,9 @@ export function GuiaDialog({ open, onClose, seccion }: { open: boolean; onClose:
       <DialogContent title="Cómo funciona el método" description="Seis ideas para controlar una obra sin sorpresas.">
         <div className="space-y-4">
           {SECCIONES.map((s) => (
-            <section key={s.id} className={s.id === seccion ? "rounded-xl bg-accent/60 -mx-2 px-2 py-2" : ""}>
-              <h3 className="font-semibold text-sm">{s.titulo}</h3>
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{s.texto}</p>
+            <section key={s.id} className={"border-t border-border pt-3 " + (s.id === seccion ? "border-l-2 border-l-foreground pl-3 -ml-3" : "")}>
+              <h3 className="font-semibold text-[15px]">{s.titulo}</h3>
+              <p className="text-[14px] text-ink-2 mt-1 leading-relaxed">{s.texto}</p>
             </section>
           ))}
         </div>
