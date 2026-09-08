@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase, APP_URL } from "./lib/supabase.js";
+import { supabase } from "./lib/supabase.js";
 import * as api from "./lib/api.js";
 import Tracker from "./Tracker.jsx";
 
@@ -14,33 +14,48 @@ const boton = { width: "100%", border: 0, background: "#1E2F3C", color: "#fff", 
 
 function Entrar() {
   const [correo, setCorreo] = useState("");
-  const [enviado, setEnviado] = useState(false);
+  const [pass, setPass] = useState("");
   const [err, setErr] = useState("");
   const [cargando, setCargando] = useState(false);
-  const enviar = async () => {
+  const listo = correo.includes("@") && pass.length >= 6 && !cargando;
+  const entrar = async () => {
+    if (!listo) return;
     setErr(""); setCargando(true);
-    const { error } = await supabase.auth.signInWithOtp({ email: correo.trim(), options: { emailRedirectTo: APP_URL } });
+    const { error } = await supabase.auth.signInWithPassword({ email: correo.trim(), password: pass });
     setCargando(false);
-    if (error) setErr(error.message); else setEnviado(true);
+    if (error) setErr(error.message === "Invalid login credentials" ? "Correo o contraseña incorrectos." : error.message);
   };
   return (
     <div style={shell}>
       <div style={caja}>
-        <h1 style={{ fontFamily: '"Iowan Old Style",Palatino,Georgia,serif', fontSize: 24, margin: "0 0 4px" }}>Control de obra</h1>
-        {enviado ? (
-          <p style={{ fontSize: 14, color: "#5B6B75" }}>Te mandé un link a <b>{correo}</b>. Ábrelo y entras directo.</p>
-        ) : (
-          <>
-            <p style={{ fontSize: 14, color: "#5B6B75", margin: "0 0 14px" }}>Escribe tu correo y te mando un link para entrar. Sin contraseña.</p>
-            <input style={input} type="email" inputMode="email" autoComplete="email" placeholder="tu@correo.com" value={correo}
-              onChange={(e) => setCorreo(e.target.value)} onKeyDown={(e) => e.key === "Enter" && correo.includes("@") && enviar()} />
-            <button style={{ ...boton, opacity: correo.includes("@") && !cargando ? 1 : 0.5 }} disabled={!correo.includes("@") || cargando} onClick={enviar}>
-              {cargando ? "Enviando…" : "Mandarme el link"}
-            </button>
-            {err && <p style={{ color: "#B23A32", fontSize: 13, marginTop: 10 }}>{err}</p>}
-          </>
-        )}
+        <h1 style={{ fontFamily: '"Iowan Old Style",Palatino,Georgia,serif', fontSize: 24, margin: "0 0 14px" }}>Control de obra</h1>
+        <input style={input} type="email" inputMode="email" autoComplete="email" placeholder="tu@correo.com" value={correo}
+          onChange={(e) => setCorreo(e.target.value)} onKeyDown={(e) => e.key === "Enter" && entrar()} />
+        <input style={{ ...input, marginTop: 8 }} type="password" autoComplete="current-password" placeholder="Contraseña" value={pass}
+          onChange={(e) => setPass(e.target.value)} onKeyDown={(e) => e.key === "Enter" && entrar()} />
+        <button style={{ ...boton, opacity: listo ? 1 : 0.5 }} disabled={!listo} onClick={entrar}>
+          {cargando ? "Entrando…" : "Entrar"}
+        </button>
+        {err && <p style={{ color: "#B23A32", fontSize: 13, marginTop: 10 }}>{err}</p>}
       </div>
+    </div>
+  );
+}
+
+function CambiarPass() {
+  const [abierto, setAbierto] = useState(false);
+  const [pass, setPass] = useState("");
+  const [msg, setMsg] = useState("");
+  const guardar = async () => {
+    const { error } = await supabase.auth.updateUser({ password: pass });
+    if (error) setMsg(error.message); else { setMsg("Contraseña actualizada."); setPass(""); setAbierto(false); }
+  };
+  if (!abierto) return <button onClick={() => setAbierto(true)} style={{ background: "none", border: 0, color: "#5B6B75", fontSize: 13, marginTop: 16, padding: 0, marginRight: 14 }}>{msg || "Cambiar contraseña"}</button>;
+  return (
+    <div style={{ marginTop: 14 }}>
+      <input style={input} type="password" autoComplete="new-password" placeholder="Nueva contraseña (mínimo 6)" value={pass} onChange={(e) => setPass(e.target.value)} />
+      <button style={{ ...boton, opacity: pass.length >= 6 ? 1 : 0.5 }} disabled={pass.length < 6} onClick={guardar}>Guardar contraseña</button>
+      {msg && <p style={{ color: "#B23A32", fontSize: 13, marginTop: 8 }}>{msg}</p>}
     </div>
   );
 }
@@ -82,6 +97,7 @@ function Proyectos({ onAbrir, onSalir }) {
           </label>
         </div>
         {err && <p style={{ color: "#B23A32", fontSize: 13, marginTop: 10 }}>{err}</p>}
+        <CambiarPass />
         <button onClick={onSalir} style={{ background: "none", border: 0, color: "#5B6B75", fontSize: 13, marginTop: 16, padding: 0 }}>Cerrar sesión</button>
       </div>
     </div>
