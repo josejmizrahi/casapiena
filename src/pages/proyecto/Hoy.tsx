@@ -36,6 +36,7 @@ export default function Hoy() {
   const rojas = calc.partidas.filter((x) => x.nivel === "rojo");
   const ambar = calc.partidas.filter((x) => x.nivel === "ambar");
   const adelantadas = calc.partidas.filter((x) => x.adelantada);
+  const adelantados = calc.conceptos.filter((c) => c.pagadoAdelantado);
   const suma = (xs: { monto: number }[]) => xs.reduce((a, b) => a + b.monto, 0);
   const avance = pct(calc.pagadoTotal, calc.granTotal);
 
@@ -44,6 +45,7 @@ export default function Hoy() {
     { ok: p.meta.presupuestoObra > 0, texto: "Definir el presupuesto general", a: "ajustes" },
     { ok: calc.partidas.length > 0, texto: "Crear las partidas de la obra", a: "obra" },
     { ok: calc.partidas.length > 0 && s.sinCandado === 0, texto: "Ponerle candado a cada partida", a: "obra" },
+    { ok: calc.contingencia.hay, texto: "Marcar una partida como reserva de imprevistos", a: "obra" },
     { ok: calc.conceptos.length > 0, texto: "Capturar los conceptos con su presupuesto", a: "obra" },
     { ok: calc.conceptos.length > 0 && s.sinPresupuesto === 0, texto: "Que ningún concepto quede sin presupuesto", a: "obra" },
     { ok: p.proveedores.length > 0, texto: "Dar de alta proveedores con datos bancarios", a: "proveedores" },
@@ -58,7 +60,9 @@ export default function Hoy() {
   if (vencidas.length) acciones.push({ icon: <PackageX />, titulo: `${plural(vencidas.length, "entrega vencida", "entregas vencidas")}`, detalle: vencidas.slice(0, 3).map((c) => c.nombre).join(", ") + (vencidas.length > 3 ? "…" : ""), a: "compras", tone: "bad" });
   if (rojas.length) acciones.push({ icon: <Lock />, titulo: `${plural(rojas.length, "partida excedida", "partidas excedidas")}`, detalle: rojas.map((x) => `${x.nombre} (+${fm(-x.comparativa)})`).join(", "), a: "obra", tone: "bad" });
   if (ambar.length) acciones.push({ icon: <AlertTriangle />, titulo: `${plural(ambar.length, "partida")} arriba del ${Math.round(UMBRAL_AMBAR * 100)} % del candado`, detalle: ambar.map((x) => `${x.nombre} (${Math.round(x.usoCandado * 100)}%)`).join(", "), a: "obra", tone: "warn" });
-  if (adelantadas.length) acciones.push({ icon: <AlertTriangle />, titulo: "Pagos adelantados al avance", detalle: adelantadas.map((x) => `${x.nombre} (${x.avance}%)`).join(", "), a: "resumen", tone: "info" });
+  if (adelantados.length) acciones.push({ icon: <AlertTriangle />, titulo: `${plural(adelantados.length, "concepto pagado", "conceptos pagados")} por delante de su avance físico`, detalle: adelantados.slice(0, 3).map((c) => `${c.nombre} (pagado ${c.pctPagado}%, hecho ${c.avance}%)`).join(", ") + (adelantados.length > 3 ? "…" : ""), a: "resumen", tone: "warn" });
+  else if (adelantadas.length) acciones.push({ icon: <AlertTriangle />, titulo: "Pagos adelantados al ritmo de la obra", detalle: adelantadas.map((x) => `${x.nombre} (${x.avance}%)`).join(", "), a: "resumen", tone: "info" });
+  if (calc.contingencia.hay && calc.contingencia.disponible <= 0) acciones.push({ icon: <Lock />, titulo: "Se agotó la reserva de imprevistos", detalle: `Traspasada ${fm(calc.contingencia.usada)} de ${fm(calc.contingencia.candadoOriginal)}`, a: "resumen", tone: "bad" });
   if (!arrancando && s.sinPresupuesto) acciones.push({ icon: <Circle />, titulo: `${plural(s.sinPresupuesto, "concepto")} sin presupuesto`, detalle: "No cuentan en lo comprometido; el candado se ve más libre de lo que es.", a: "obra", tone: "info" });
   if (s.candadosSobrePresupuesto) acciones.push({ icon: <Lock />, titulo: "Los candados suman más que el presupuesto general", detalle: `${fm(calc.totalCandados)} contra ${fm(p.meta.presupuestoObra)}`, a: "obra", tone: "bad" });
 
@@ -77,7 +81,9 @@ export default function Hoy() {
         <Stat label="Presupuesto general" value={fm(p.meta.presupuestoObra)} />
         <Stat label="Comprometido" value={fm(calc.totalObra)} sub={p.meta.presupuestoObra > 0 ? `${pct(calc.totalObra, p.meta.presupuestoObra)}% del presupuesto` : undefined} tone={calc.comparativaGlobal < 0 ? "bad" : undefined} />
         <Stat label="Candados asignados" value={fm(calc.totalCandados)} sub={p.meta.presupuestoObra > 0 ? `${fm(p.meta.presupuestoObra - calc.totalCandados)} sin asignar` : undefined} tone={s.candadosSobrePresupuesto ? "bad" : undefined} />
-        <Stat label="Partidas" value={`${calc.partidas.length}`} sub={`${rojas.length} en rojo · ${ambar.length} en ámbar · ${s.sinCandado} sin candado`} />
+        {calc.contingencia.hay
+          ? <Stat label="Reserva de imprevistos" value={fm(calc.contingencia.disponible)} sub={`de ${fm(calc.contingencia.candadoOriginal)} · usada ${fm(calc.contingencia.usada)}`} tone={calc.contingencia.disponible <= 0 ? "bad" : "ok"} />
+          : <Stat label="Partidas" value={`${calc.partidas.length}`} sub={`${rojas.length} en rojo · ${ambar.length} en ámbar · ${s.sinCandado} sin candado`} />}
       </StatStrip>
 
       {arrancando && (

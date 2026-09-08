@@ -26,7 +26,54 @@ export default function Resumen() {
         <div className="text-3xl font-bold num">{fm(calc.granTotal)}</div>
         <StackedBar pagado={avance} tramite={pct(calc.porPagarObra, calc.granTotal)} light />
         <div className="flex justify-between text-xs opacity-90 num"><span>Pagado {fm(calc.pagadoTotal)} ({avance}%)</span><span>En trámite {fm(calc.porPagarObra)}</span></div>
+        {calc.conAvance && <div className="flex justify-between text-xs opacity-90 num pt-1"><span>Avance físico de obra {calc.avanceFisicoObra}%</span><span className={pct(calc.pagadoObra, calc.totalObra) - calc.avanceFisicoObra >= 25 ? "font-semibold" : ""}>Pagado de obra {pct(calc.pagadoObra, calc.totalObra)}%</span></div>}
       </div>
+      {calc.contingencia.hay && (
+        <Card>
+          <CardHeader><div><CardTitle>Reserva de imprevistos</CardTitle><CardDescription>Lo que queda de colchón y a dónde se fue.</CardDescription></div></CardHeader>
+          <CardContent>
+            <KV k="Reserva original" v={fm(calc.contingencia.candadoOriginal)} />
+            <KV k="Traspasada a otras partidas" v={fm(calc.contingencia.usada)} tone={calc.contingencia.usada > 0 ? "warn" : undefined} />
+            {calc.contingencia.comprometidoDentro > 0 && <KV k="Gastada directo en la reserva" v={fm(calc.contingencia.comprometidoDentro)} tone="warn" />}
+            <KV k="Disponible" v={fm(calc.contingencia.disponible)} tone={calc.contingencia.disponible < 0 ? "bad" : "ok"} bold />
+          </CardContent>
+        </Card>
+      )}
+      {Math.abs(calc.desviacionObra) > 0.005 && (
+        <Card>
+          <CardHeader><div><CardTitle>Línea base contra actual</CardTitle><CardDescription>Lo que se presupuestó al inicio contra lo que hoy está comprometido. Los motivos están en la bitácora de cada concepto.</CardDescription></div></CardHeader>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead><tr className="text-xs text-muted-foreground"><th className="text-left font-medium pb-1">Partida</th><th className="text-right font-medium pb-1">Base</th><th className="text-right font-medium pb-1">Actual</th><th className="text-right font-medium pb-1">Desviación</th></tr></thead>
+              <tbody>
+                {calc.partidas.filter((x) => x.comprometido > 0 || x.baseTotal > 0).map((x) => (
+                  <tr key={x.id} className="border-t border-border num">
+                    <td className="py-1.5 pr-2 truncate max-w-[10rem]">{x.nombre}</td>
+                    <td className="py-1.5 text-right text-muted-foreground">{fm(x.baseTotal)}</td>
+                    <td className="py-1.5 text-right">{fm(x.comprometido)}</td>
+                    <td className={"py-1.5 text-right font-medium " + (x.desviacion > 0.005 ? "text-bad" : x.desviacion < -0.005 ? "text-ok" : "text-muted-foreground")}>{x.desviacion > 0 ? "+" : ""}{fm(x.desviacion)}</td>
+                  </tr>
+                ))}
+                <tr className="border-t border-border num font-semibold"><td className="py-1.5">Obra</td><td className="py-1.5 text-right text-muted-foreground">{fm(calc.baseObra)}</td><td className="py-1.5 text-right">{fm(calc.totalObra)}</td><td className={"py-1.5 text-right " + (calc.desviacionObra > 0 ? "text-bad" : "text-ok")}>{calc.desviacionObra > 0 ? "+" : ""}{fm(calc.desviacionObra)}</td></tr>
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
+      {calc.conAvance && (
+        <Card>
+          <CardHeader><div><CardTitle>Avance físico contra pagado</CardTitle><CardDescription>Cuando lo pagado va muy por delante de lo hecho, estás financiando al proveedor.</CardDescription></div></CardHeader>
+          <CardContent>
+            {calc.partidas.filter((x) => x.comprometido > 0).map((x) => (
+              <div key={x.id} className="py-2 border-t border-border first:border-t-0">
+                <div className="flex justify-between text-sm"><span className="truncate">{x.nombre}</span><span className={"num text-xs " + (x.avance - x.avanceFisico >= 25 ? "text-warn font-semibold" : "text-muted-foreground")}>hecho {x.avanceFisico}% · pagado {x.avance}%</span></div>
+                <div className="mt-1 space-y-1"><StackedBar pagado={x.avanceFisico} tramite={0} className="h-1.5" /><StackedBar pagado={0} tramite={x.avance} className="h-1.5" /></div>
+              </div>
+            ))}
+            <p className="text-[11px] text-muted-foreground mt-2">Barra verde: avance físico. Barra clara: pagado.</p>
+          </CardContent>
+        </Card>
+      )}
       {calc.comparativaGlobal < 0 && p.meta.presupuestoObra > 0 && <Alert tone="bad"><b>Te pasas del presupuesto de obra por {fm(-calc.comparativaGlobal)}.</b></Alert>}
       {excedidas.length > 0 && <Alert><b>{excedidas.length} partida{excedidas.length > 1 ? "s" : ""} sobre su candado:</b> {excedidas.map((x) => `${x.nombre} (+${fm(-x.comparativa)})`).join(", ")}</Alert>}
       {adelantadas.length > 0 && <Alert tone="info"><b>Pagos adelantados al avance:</b> {adelantadas.map((x) => `${x.nombre} (${x.avance}%)`).join(", ")} · avance general {calc.avanceGlobal}%</Alert>}

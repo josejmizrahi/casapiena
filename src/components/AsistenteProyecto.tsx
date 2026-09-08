@@ -42,7 +42,7 @@ export function AsistenteProyecto({ open, onClose }: { open: boolean; onClose: (
       let i = 0;
       for (const f of filas) {
         setCreando(`Partida ${i + 1} de ${filas.length}…`);
-        await api.guardarPartida(p.id, { nombre: f.nombre, candado: Math.round((presupuesto * f.pct) / 100) }, i++);
+        await api.guardarPartida(p.id, { nombre: f.nombre, candado: Math.round((presupuesto * f.pct) / 100), contingencia: !!f.contingencia }, i++);
       }
       toast.success(`Proyecto "${nombre.trim()}" creado`);
       onClose();

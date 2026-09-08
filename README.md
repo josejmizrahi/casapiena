@@ -11,7 +11,7 @@ correo y contraseña, RLS en todas las tablas).
 ## Antes de correr
 
 1. Aplica en el SQL Editor de Supabase, en orden: `schema.sql`, `02_set_motivo.sql`,
-   `03_fix_rls_proyectos.sql`, `04_miembros.sql`.
+   `03_fix_rls_proyectos.sql`, `04_miembros.sql`, `05_fase2.sql`, `06_linea_base.sql`.
 2. Crea tu usuario en Supabase → Authentication → Users → **Add user** (correo y
    contraseña, con "Auto confirm"). Desde "Mis proyectos" puedes cambiarla.
 3. Opcional: copia `.env.example` a `.env` y pon tu URL y publishable key. Si no,

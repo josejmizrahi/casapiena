@@ -56,10 +56,11 @@ export async function cargar(proyectoId: string): Promise<Proyecto> {
     },
     proveedores: provs.map((v: any) => ({ id: v.id, nombre: v.nombre, razon: v.razon || "", banco: v.banco || "", clabe: v.clabe || "", tel: v.tel || "", nota: v.nota || "" })),
     partidas: parts.map((pa: any): Partida => ({
-      id: pa.id, nombre: pa.nombre, candado: +pa.candado, orden: pa.orden,
+      id: pa.id, nombre: pa.nombre, candado: +pa.candado, orden: pa.orden, contingencia: !!pa.contingencia,
       conceptos: cons.filter((c) => c.partida_id === pa.id).map((c): Concepto => ({
         id: c.id, partidaId: pa.id, nombre: c.nombre, proveedorId: c.proveedor_id || "",
         presupuesto: +c.presupuesto, iva: +c.iva, base: { presupuesto: +c.base_presupuesto, iva: +c.base_iva },
+        cantidad: +c.cantidad || 1, unidad: c.unidad || "", precioUnitario: +c.precio_unitario || 0, avance: +c.avance || 0,
         estado: c.estado, prioridad: c.prioridad || "sinClasificar", logistica: c.logistica || "porComprar",
         pedido: c.pedido || "", eta: c.eta || "", nota: c.nota || "", links: linksDe[c.id] || [], ajustes: ajusDe[c.id] || [],
       })),
@@ -91,9 +92,10 @@ export async function guardarProveedor(proyectoId: string, d: Partial<Proveedor>
 export const borrarProveedor = (id: string) => supabase.from("proveedores").delete().eq("id", id).then(ok);
 
 // ── partidas ─────────────────────────────────────────────────
-export async function guardarPartida(proyectoId: string, d: { id?: string; nombre: string; candado: number }, orden = 0) {
-  if (d.id) return supabase.from("partidas").update({ nombre: d.nombre, candado: d.candado }).eq("id", d.id).then(ok);
-  return supabase.from("partidas").insert({ proyecto_id: proyectoId, nombre: d.nombre, candado: d.candado, orden }).then(ok);
+export async function guardarPartida(proyectoId: string, d: { id?: string; nombre: string; candado: number; contingencia?: boolean }, orden = 0) {
+  const row = { nombre: d.nombre, candado: d.candado, contingencia: !!d.contingencia };
+  if (d.id) return supabase.from("partidas").update(row).eq("id", d.id).then(ok);
+  return supabase.from("partidas").insert({ proyecto_id: proyectoId, ...row, orden }).then(ok);
 }
 export const borrarPartida = (id: string) => supabase.from("partidas").delete().eq("id", id).then(ok);
 
@@ -102,6 +104,8 @@ export type ConceptoForm = Omit<Concepto, "id" | "ajustes" | "base"> & { id?: st
 export async function guardarConcepto(d: ConceptoForm, motivo: string, orden = 0): Promise<string> {
   const row = {
     nombre: d.nombre, proveedor_id: d.proveedorId || null, presupuesto: d.presupuesto, iva: d.iva,
+    cantidad: d.cantidad || 1, unidad: d.unidad || "", precio_unitario: d.precioUnitario || 0,
+    avance: Math.max(0, Math.min(100, d.avance || 0)),
     estado: d.estado, prioridad: d.prioridad || "sinClasificar", logistica: d.logistica || "porComprar",
     pedido: d.pedido || "", eta: d.eta || null, nota: d.nota || "",
   };
@@ -109,7 +113,10 @@ export async function guardarConcepto(d: ConceptoForm, motivo: string, orden = 0
   if (id) {
     // el trigger de la base escribe la bitácora; le pasamos el motivo por sesión
     if (motivo) await supabase.rpc("set_motivo", { texto: motivo });
-    await supabase.from("conceptos").update(row).eq("id", id).then(ok);
+    // la línea base es el primer presupuesto distinto de cero
+    const baseCero = !d.base || d.base.presupuesto + d.base.iva <= 0.005;
+    const conBase = baseCero && d.presupuesto + d.iva > 0.005 ? { ...row, base_presupuesto: d.presupuesto, base_iva: d.iva } : row;
+    await supabase.from("conceptos").update(conBase).eq("id", id).then(ok);
   } else {
     const r = ok<{ id: string }>(await supabase.from("conceptos").insert({ ...row, partida_id: d.partidaId, orden, base_presupuesto: d.presupuesto, base_iva: d.iva }).select("id").single());
     id = r.id;
@@ -118,7 +125,9 @@ export async function guardarConcepto(d: ConceptoForm, motivo: string, orden = 0
   return id;
 }
 export const borrarConcepto = (id: string) => supabase.from("conceptos").delete().eq("id", id).then(ok);
-export const setLogistica = (id: string, logistica: string) => supabase.from("conceptos").update({ logistica }).eq("id", id).then(ok);
+// Al marcar instalado, el avance físico queda en 100.
+export const setLogistica = (id: string, logistica: string) => supabase.from("conceptos").update(logistica === "instalado" ? { logistica, avance: 100 } : { logistica }).eq("id", id).then(ok);
+export const setAvance = (id: string, avance: number) => supabase.from("conceptos").update({ avance: Math.max(0, Math.min(100, avance)) }).eq("id", id).then(ok);
 
 async function sincronizarLinks(conceptoId: string, links: Concepto["links"]) {
   const actuales = ok<{ id: string }[]>(await supabase.from("concepto_links").select("id").eq("concepto_id", conceptoId));
