@@ -11,6 +11,12 @@ React + Vite, con Supabase como backend (Postgres + auth por magic link).
 3. Copia `.env.example` a `.env` y pon tu publishable key
    (Supabase → Project Settings → API → anon/publishable).
 
+## Proyecto inicial
+
+`seed/casapiena_inicial.json` es el respaldo del proyecto "Casa Piena — Mobiliario"
+(partidas y conceptos por cuarto, sin proveedores ni pagos). Para cargarlo, entra a la
+app y usa **Importar respaldo JSON**; se crea como proyecto tuyo.
+
 ## Local
 
 ```bash

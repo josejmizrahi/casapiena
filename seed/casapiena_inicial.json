@@ -1,0 +1,1336 @@
+{
+ "v": 3,
+ "meta": {
+  "nombre": "Casa Piena — Mobiliario",
+  "clientes": "",
+  "presupuestoObra": 0,
+  "pctHonorarios": 15,
+  "direccionEfectivo": "",
+  "contactoEfectivo": "",
+  "instruccionesEfectivo": "Favor de coordinar día y horario para la entrega de efectivo."
+ },
+ "proveedores": [],
+ "partidas": [
+  {
+   "id": "p_seed_1",
+   "nombre": "Cuarto principal",
+   "candado": 0,
+   "conceptos": [
+    {
+     "id": "c_seed_2",
+     "nombre": "Base y cabecera cama king",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_3",
+     "nombre": "Colchón king",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_4",
+     "nombre": "Ropa de cama",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_5",
+     "nombre": "Burós (2)",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_6",
+     "nombre": "Luminarias de buró (2)",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_7",
+     "nombre": "Walk-in closet",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "Empotrado, va con carpintería",
+     "links": []
+    },
+    {
+     "id": "c_seed_8",
+     "nombre": "Cortinas",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_9",
+     "nombre": "Cancel para baño",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_10",
+     "nombre": "Tapete",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_11",
+     "nombre": "Mueble de tele",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_12",
+     "nombre": "Poltronas (2) y mesa, o bay window",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "Decidir entre las dos opciones antes de cotizar",
+     "links": []
+    },
+    {
+     "id": "c_seed_13",
+     "nombre": "Banca al pie de la cama",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "opcional",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_14",
+     "nombre": "Accesorios de baño",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "opcional",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_15",
+     "nombre": "Decoración",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "opcional",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    }
+   ]
+  },
+  {
+   "id": "p_seed_16",
+   "nombre": "Cuarto 1",
+   "candado": 0,
+   "conceptos": [
+    {
+     "id": "c_seed_17",
+     "nombre": "Bases y cabeceras cama matrimonial (2)",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_18",
+     "nombre": "Colchones matrimoniales (2)",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_19",
+     "nombre": "Ropa de cama (2 juegos)",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_20",
+     "nombre": "Closet empotrado",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "Empotrado, va con carpintería",
+     "links": []
+    },
+    {
+     "id": "c_seed_21",
+     "nombre": "Cortinas",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_22",
+     "nombre": "Cancel para baño",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_23",
+     "nombre": "Buró",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "Uno solo para las dos camas",
+     "links": []
+    },
+    {
+     "id": "c_seed_24",
+     "nombre": "Luminaria de buró o de techo",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "Decidir cuál de las dos",
+     "links": []
+    },
+    {
+     "id": "c_seed_25",
+     "nombre": "Escritorio o tocador empotrado",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "Decidir cuál de los dos",
+     "links": []
+    },
+    {
+     "id": "c_seed_26",
+     "nombre": "Silla de escritorio",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_27",
+     "nombre": "Tapete",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "opcional",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    }
+   ]
+  },
+  {
+   "id": "p_seed_28",
+   "nombre": "Cuarto 2",
+   "candado": 0,
+   "conceptos": [
+    {
+     "id": "c_seed_29",
+     "nombre": "Base y cabecera cama queen",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_30",
+     "nombre": "Colchón queen",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_31",
+     "nombre": "Ropa de cama",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_32",
+     "nombre": "Burós (2)",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_33",
+     "nombre": "Luminarias de buró (2)",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_34",
+     "nombre": "Closet empotrado",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "Empotrado, va con carpintería",
+     "links": []
+    },
+    {
+     "id": "c_seed_35",
+     "nombre": "Cortinas",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_36",
+     "nombre": "Cancel para baño",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_37",
+     "nombre": "Mueble de tele empotrado",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "Empotrado, va con carpintería",
+     "links": []
+    },
+    {
+     "id": "c_seed_38",
+     "nombre": "Tapete",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "opcional",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    }
+   ]
+  },
+  {
+   "id": "p_seed_39",
+   "nombre": "Recibidor",
+   "candado": 0,
+   "conceptos": [
+    {
+     "id": "c_seed_40",
+     "nombre": "Consola",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_41",
+     "nombre": "Luminaria",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_42",
+     "nombre": "Cuadro",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "exhibicion",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_43",
+     "nombre": "Ornamento",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "exhibicion",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    }
+   ]
+  },
+  {
+   "id": "p_seed_44",
+   "nombre": "Sala",
+   "candado": 0,
+   "conceptos": [
+    {
+     "id": "c_seed_45",
+     "nombre": "Sofá principal",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_46",
+     "nombre": "Mesa de centro",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_47",
+     "nombre": "Cortinas",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_48",
+     "nombre": "Luminarias",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_49",
+     "nombre": "Poltrona",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_50",
+     "nombre": "Tapete",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_51",
+     "nombre": "Consola",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_52",
+     "nombre": "Cojines",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "opcional",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_53",
+     "nombre": "Manta",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "opcional",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_54",
+     "nombre": "Cuadro",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "exhibicion",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_55",
+     "nombre": "Ornamento",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "exhibicion",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    }
+   ]
+  },
+  {
+   "id": "p_seed_56",
+   "nombre": "Comedor",
+   "candado": 0,
+   "conceptos": [
+    {
+     "id": "c_seed_57",
+     "nombre": "Mesa",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_58",
+     "nombre": "Sillas",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_59",
+     "nombre": "Luminaria",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_60",
+     "nombre": "Área para guardar vajillas",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "Empotrado o mueble suelto, definir",
+     "links": []
+    },
+    {
+     "id": "c_seed_61",
+     "nombre": "Ornamento",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "exhibicion",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    }
+   ]
+  },
+  {
+   "id": "p_seed_62",
+   "nombre": "Family",
+   "candado": 0,
+   "conceptos": [
+    {
+     "id": "c_seed_63",
+     "nombre": "Sofá modular",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_64",
+     "nombre": "Mesa de centro",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_65",
+     "nombre": "Mueble para TV",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_66",
+     "nombre": "Luminarias",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_67",
+     "nombre": "Tapete",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_68",
+     "nombre": "Cojines",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "opcional",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_69",
+     "nombre": "Manta",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "opcional",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_70",
+     "nombre": "Ornamento",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "exhibicion",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    }
+   ]
+  },
+  {
+   "id": "p_seed_71",
+   "nombre": "Muros",
+   "candado": 0,
+   "conceptos": [
+    {
+     "id": "c_seed_72",
+     "nombre": "Papel tapiz o acabados especiales",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "flexible",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "Definir alcance por área antes de cotizar",
+     "links": []
+    }
+   ]
+  },
+  {
+   "id": "p_seed_73",
+   "nombre": "Fletes, armados e instalaciones",
+   "candado": 0,
+   "conceptos": [
+    {
+     "id": "c_seed_74",
+     "nombre": "Fletes",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    },
+    {
+     "id": "c_seed_75",
+     "nombre": "Armados e instalaciones",
+     "proveedorId": "",
+     "presupuesto": 0,
+     "iva": 0,
+     "base": {
+      "presupuesto": 0,
+      "iva": 0
+     },
+     "ajustes": [],
+     "estado": "pendiente",
+     "prioridad": "indispensable",
+     "logistica": "porComprar",
+     "pedido": "",
+     "eta": "",
+     "nota": "",
+     "links": []
+    }
+   ]
+  }
+ ],
+ "pagos": [],
+ "excedentes": [],
+ "relaciones": [],
+ "traspasos": []
+}
