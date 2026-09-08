@@ -16,7 +16,7 @@ significa estado (verde, ámbar, rojo, azul). Los tokens viven en `src/index.css
 
 1. Aplica en el SQL Editor de Supabase, en orden: `schema.sql`, `02_set_motivo.sql`,
    `03_fix_rls_proyectos.sql`, `04_miembros.sql`, `05_fase2.sql`, `06_linea_base.sql`, `07_fase3.sql` (crea el bucket privado `adjuntos`
-   en Storage y sus políticas), `08_invitaciones.sql`.
+   en Storage y sus políticas), `08_invitaciones.sql`, `09_autoconfirmar.sql`.
 2. Crea tu usuario en Supabase → Authentication → Users → **Add user** (correo y
    contraseña, con "Auto confirm"). Desde "Mis proyectos" puedes cambiarla.
 3. Opcional: copia `.env.example` a `.env` y pon tu URL y publishable key. Si no,

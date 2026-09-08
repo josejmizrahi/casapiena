@@ -19,9 +19,13 @@ export default function Login() {
     if (modo === "crear") {
       // Cuenta nueva. Si el proyecto de Supabase pide confirmar el correo, no hay sesión todavía.
       const { data, error } = await supabase.auth.signUp({ email: correo.trim(), password: pass });
+      if (error) { setCargando(false); return setErr(error.message.includes("already registered") ? "Ese correo ya tiene cuenta. Entra con tu contraseña." : error.message); }
+      if (!data.session) {
+        // La base confirma la cuenta al crearse; intentamos entrar de inmediato.
+        const { error: e2 } = await supabase.auth.signInWithPassword({ email: correo.trim(), password: pass });
+        if (e2) setAviso("Te enviamos un correo para confirmar la cuenta. Ábrelo y después entra aquí con tu contraseña.");
+      }
       setCargando(false);
-      if (error) return setErr(error.message.includes("already registered") ? "Ese correo ya tiene cuenta. Entra con tu contraseña." : error.message);
-      if (!data.session) setAviso("Te enviamos un correo para confirmar la cuenta. Ábrelo y después entra aquí con tu contraseña.");
       return;
     }
     const { error } = await supabase.auth.signInWithPassword({ email: correo.trim(), password: pass });
