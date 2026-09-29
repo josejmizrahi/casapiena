@@ -21,7 +21,10 @@ export default function Login() {
     if (modo === "olvide") {
       const { error } = await supabase.auth.resetPasswordForEmail(correo.trim(), { redirectTo: location.origin + location.pathname.replace(/index\.html$/, "") });
       setCargando(false);
-      if (error) return setErr(error.message);
+      // Supabase limita los correos por hora para todo el proyecto (con su servidor de correo incluido, unos 2)
+      if (error) return setErr(/rate limit|too many/i.test(error.message) || error.status === 429
+        ? "Se mandaron demasiados correos en poco tiempo. Espera una hora y vuelve a intentar; si ya te llegó una liga, úsala."
+        : error.message);
       return setAviso("Te enviamos un correo con una liga para poner contraseña nueva. Ábrela desde este mismo teléfono o computadora.");
     }
     if (modo === "crear") {
