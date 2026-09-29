@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import type { Concepto, Excedente, Pago, Proveedor } from "@/lib/types";
-import type { ConceptoForm, PagoForm } from "@/api";
+import type { ConceptoForm, GastoForm, PagoForm } from "@/api";
+import type { LiquidacionForm } from "@/modals/GastoDialog";
 
 // Un solo lugar abre los diálogos del proyecto, desde cualquier vista.
 export type Modal =
@@ -12,6 +13,8 @@ export type Modal =
   | { tipo: "exc"; d: Partial<Excedente> }
   | { tipo: "prov"; d: Partial<Proveedor>; onSave?: (id: string) => void }
   | { tipo: "guia"; seccion?: string }
+  | { tipo: "gasto"; d: Partial<GastoForm> }
+  | { tipo: "liquidacion"; d: Partial<LiquidacionForm> }
   | null;
 
 const ModalContext = createContext<{ modal: Modal; abrir: (m: Modal) => void; cerrar: () => void } | null>(null);

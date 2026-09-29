@@ -5,6 +5,7 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { Toaster } from "sonner";
 import { useSesion } from "@/hooks/useSesion";
+import { supabase } from "@/lib/supabase";
 import { TooltipProvider } from "@/components/ui/misc";
 import { Button } from "@/components/ui/button";
 import Login from "@/pages/Login";
@@ -17,6 +18,7 @@ import Pagos from "@/pages/proyecto/Pagos";
 import Relaciones from "@/pages/proyecto/Relaciones";
 import Resumen from "@/pages/proyecto/Resumen";
 import Proveedores from "@/pages/proyecto/Proveedores";
+import Gastos from "@/pages/proyecto/Gastos";
 import Ajustes from "@/pages/proyecto/Ajustes";
 import Reporte from "@/pages/proyecto/Reporte";
 import ReportePublico from "@/pages/ReportePublico";
@@ -61,6 +63,11 @@ class Guardia extends Component<{ children: ReactNode }, { error: Error | null }
 function Rutas() {
   const sesion = useSesion();
   const [recuperando, setRecuperando] = useState(() => sessionStorage.getItem("obra:recuperar") === "1");
+  // respaldo: si Supabase avisa que la sesión viene de una liga de recuperación, pide contraseña nueva
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((e) => { if (e === "PASSWORD_RECOVERY") { sessionStorage.setItem("obra:recuperar", "1"); setRecuperando(true); } });
+    return () => data.subscription.unsubscribe();
+  }, []);
   const publico = location.hash.startsWith("#/r/");
   if (publico) return <Routes><Route path="/r/:token" element={<ReportePublico />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>;
   if (sesion === undefined) return <div className="min-h-dvh flex items-center justify-center text-sm text-ink-3">Cargando…</div>;
@@ -77,6 +84,7 @@ function Rutas() {
         <Route path="pagos" element={<Pagos />} />
         <Route path="relaciones" element={<Relaciones />} />
         <Route path="resumen" element={<Resumen />} />
+        <Route path="gastos" element={<Gastos />} />
         <Route path="proveedores" element={<Proveedores />} />
         <Route path="ajustes" element={<Ajustes />} />
         <Route path="reporte" element={<Reporte />} />
