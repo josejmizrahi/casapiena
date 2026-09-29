@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from "@/lib/supabase";
-import type { Adjunto, CatalogoProveedor, Concepto, Excedente, Meta, Miembro, Pago, Partida, Perfil, PlantillaGuardada, PlantillaPartida, Proveedor, Proyecto, ProyectoResumen, Relacion, Traspaso } from "@/lib/types";
+import type { Adjunto, CatalogoProveedor, Concepto, Excedente, Gasto, Gastos, Liquidacion, Meta, Miembro, Pago, Participante, Partida, Perfil, PlantillaGuardada, PlantillaPartida, Proveedor, Proyecto, ProyectoResumen, Relacion, Traspaso } from "@/lib/types";
 
 const ok = <T,>({ data, error }: { data: T | null; error: { message: string } | null }): T => {
   if (error) throw new Error(error.message);
@@ -300,3 +300,30 @@ export async function reportePublico(token: string): Promise<{ proyecto: Proyect
   const pf = d.perfil || {};
   return { proyecto, perfil: { nombre: pf.nombre || "", despacho: pf.despacho || "", telefono: pf.telefono || "", logoUrl: logoUrl(pf.logo_ruta || "") } };
 }
+
+// ── gastos compartidos entre miembros ───────────────────────────
+export async function cargarGastos(proyectoId: string): Promise<Gastos> {
+  const [part, gs, lq] = (await Promise.all([
+    supabase.rpc("participantes_gastos", { p: proyectoId }),
+    supabase.from("gastos").select("*, gasto_partes(user_id, monto)").eq("proyecto_id", proyectoId).order("fecha", { ascending: false }).order("created_at", { ascending: false }),
+    supabase.from("liquidaciones").select("*").eq("proyecto_id", proyectoId).order("fecha", { ascending: false }),
+  ])).map((r) => ok<any>(r));
+  return {
+    participantes: (part || []).map((x: any): Participante => ({ userId: x.user_id, email: x.email || "", nombre: x.nombre || "", activo: x.activo !== false })),
+    gastos: (gs || []).map((g: any): Gasto => ({
+      id: g.id, descripcion: g.descripcion, monto: +g.monto, fecha: g.fecha, pagadoPor: g.pagado_por, reparto: g.reparto || "igual", nota: g.nota || "", capturo: g.user_id || "",
+      partes: (g.gasto_partes || []).map((x: any) => ({ userId: x.user_id, monto: +x.monto })),
+    })),
+    liquidaciones: (lq || []).map((l: any): Liquidacion => ({ id: l.id, deId: l.de_id, aId: l.a_id, monto: +l.monto, fecha: l.fecha, nota: l.nota || "", capturo: l.user_id || "" })),
+  };
+}
+export type GastoForm = Omit<Gasto, "id" | "capturo"> & { id?: string };
+export const guardarGasto = async (proyectoId: string, d: GastoForm): Promise<string> => ok(await supabase.rpc("guardar_gasto", {
+  d: { id: d.id || null, proyecto_id: proyectoId, descripcion: d.descripcion, monto: d.monto, fecha: d.fecha, pagado_por: d.pagadoPor, reparto: d.reparto, nota: d.nota, partes: d.partes.map((x) => ({ user_id: x.userId, monto: x.monto })) },
+}));
+export const borrarGasto = (id: string) => supabase.from("gastos").delete().eq("id", id).then(ok);
+export async function guardarLiquidacion(proyectoId: string, d: { deId: string; aId: string; monto: number; fecha: string; nota: string }) {
+  const { data: { user } } = await supabase.auth.getUser();
+  return supabase.from("liquidaciones").insert({ proyecto_id: proyectoId, de_id: d.deId, a_id: d.aId, monto: d.monto, fecha: d.fecha, nota: d.nota, user_id: user!.id }).then(ok);
+}
+export const borrarLiquidacion = (id: string) => supabase.from("liquidaciones").delete().eq("id", id).then(ok);

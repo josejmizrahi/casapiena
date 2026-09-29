@@ -1,5 +1,5 @@
-import { NavLink, Outlet, useParams, Link } from "react-router-dom";
-import { ArrowLeft, BarChart3, ClipboardList, CreditCard, FileText, Hammer, Home, MoreHorizontal, Settings, ShoppingCart, Users, Plus } from "lucide-react";
+import { NavLink, Outlet, useParams, Link, useLocation } from "react-router-dom";
+import { ArrowLeft, BarChart3, ClipboardList, CreditCard, FileText, Hammer, Home, Receipt, MoreHorizontal, Settings, ShoppingCart, Users, Plus } from "lucide-react";
 import { ProyectoContext, useAccion, useCtxValue, useProyecto, useProyectoQuery } from "@/hooks/useProyecto";
 import { ModalProvider, useModal } from "@/hooks/useModal";
 import { cn, fm, pct } from "@/lib/utils";
@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 const NAV = [
   ["hoy", "Hoy", Home], ["obra", "Obra", Hammer], ["compras", "Compras", ShoppingCart], ["pagos", "Pagos", CreditCard], ["relaciones", "Relaciones", FileText],
-  ["resumen", "Resumen", BarChart3], ["reporte", "Reporte", ClipboardList], ["proveedores", "Proveedores", Users], ["ajustes", "Ajustes", Settings],
+  ["resumen", "Resumen", BarChart3], ["reporte", "Reporte", ClipboardList], ["gastos", "Gastos", Receipt], ["proveedores", "Proveedores", Users], ["ajustes", "Ajustes", Settings],
 ] as const;
 const MOVIL = new Set(["hoy", "obra", "compras", "pagos"]);
 
@@ -45,6 +45,7 @@ const Pantalla = ({ children }: { children: React.ReactNode }) => (
 function Shell() {
   const { p, calc } = useProyecto();
   const { abrir } = useModal();
+  const enGastos = useLocation().pathname.endsWith("/gastos");
   const avance = pct(calc.pagadoTotal, calc.granTotal);
   return (
     <div className="min-h-dvh md:flex">
@@ -88,8 +89,8 @@ function Shell() {
           <Outlet />
         </main>
 
-        {/* botón flotante: registrar pago desde cualquier vista */}
-        <Button className="no-print fixed right-4 z-30 h-13 rounded-full px-6 shadow-[0_6px_20px_-8px_rgba(23,23,22,.5)] md:bottom-8 md:right-10" style={{ bottom: "calc(4.25rem + env(safe-area-inset-bottom))" }} onClick={() => abrir({ tipo: "pago", d: {} })}><Plus />Pago</Button>
+        {/* botón flotante: registrar pago desde cualquier vista (gasto compartido en Gastos) */}
+        <Button className="no-print fixed right-4 z-30 h-13 rounded-full px-6 shadow-[0_6px_20px_-8px_rgba(23,23,22,.5)] md:bottom-8 md:right-10" style={{ bottom: "calc(4.25rem + env(safe-area-inset-bottom))" }} onClick={() => abrir(enGastos ? { tipo: "gasto", d: {} } : { tipo: "pago", d: {} })}><Plus />{enGastos ? "Gasto" : "Pago"}</Button>
 
         {/* pestañas inferiores en móvil */}
         <nav className="no-print md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-border-2 bg-panel/95 backdrop-blur grid grid-cols-5" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>

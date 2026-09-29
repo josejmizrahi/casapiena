@@ -16,7 +16,7 @@ significa estado (verde, ámbar, rojo, azul). Los tokens viven en `src/index.css
 
 1. Aplica en el SQL Editor de Supabase, en orden: `schema.sql`, `02_set_motivo.sql`,
    `03_fix_rls_proyectos.sql`, `04_miembros.sql`, `05_fase2.sql`, `06_linea_base.sql`, `07_fase3.sql` (crea el bucket privado `adjuntos`
-   en Storage y sus políticas), `08_invitaciones.sql`, `09_autoconfirmar.sql`, `10_perfil_liga.sql`.
+   en Storage y sus políticas), `08_invitaciones.sql`, `09_autoconfirmar.sql`, `10_perfil_liga.sql`, `11_gastos.sql`.
 2. Crea tu usuario en Supabase → Authentication → Users → **Add user** (correo y
    contraseña, con "Auto confirm"). Desde "Mis proyectos" puedes cambiarla.
 3. Opcional: copia `.env.example` a `.env` y pon tu URL y publishable key. Si no,
@@ -42,7 +42,23 @@ Usa rutas con `#` (HashRouter) para que funcione en Pages sin configuración ext
 "Olvidé mi contraseña" manda un correo con una liga. Para que esa liga regrese a la
 app, en Supabase → Authentication → URL Configuration agrega la URL de la app a
 **Redirect URLs** (por ejemplo `https://josejmizrahi.github.io/casapiena/**`) y ponla
-como **Site URL**. Sin eso, Supabase manda la liga a su URL por defecto.
+como **Site URL**. Sin eso, Supabase manda la liga a su URL por defecto
+(normalmente `http://localhost:3000`) y la liga "no abre nada".
+
+La app acepta la liga en sus dos formas: la de siempre (`#access_token=…&type=recovery`)
+y la de plantilla propia (`?token_hash=…&type=recovery`). Limpia los tokens de la barra
+de direcciones antes de montar las rutas y, si la liga ya expiró, lo dice en la pantalla
+de entrada en vez de regresar al login sin explicación.
+
+## Gastos compartidos
+
+La vista **Gastos** es un Splitwise dentro de cada proyecto: cualquier miembro (dueño,
+editor o lector) registra lo que pagó de su bolsa y lo reparte entre los miembros, en
+partes iguales o por montos exactos. La app calcula el saldo de cada quien y la menor
+cantidad de pagos para quedar a mano; cuando alguien paga, se registra como pago entre
+miembros. No afecta el presupuesto de la obra ni sale en el reporte público.
+Requiere `11_gastos.sql` (tablas `gastos`, `gasto_partes`, `liquidaciones` y las RPC
+`participantes_gastos` y `guardar_gasto`, que guarda el gasto y su reparto juntos).
 
 ## Sin conexión e instalación
 
@@ -62,6 +78,7 @@ src/
   api/index.ts        acceso a datos: carga completa del proyecto y todas las escrituras
   lib/types.ts        tipos de dominio y catálogos (estados, prioridades, logística)
   lib/calculos.ts     toda la aritmética: candados, comprometido, pagado, flujo de caja
+  lib/gastos.ts       gastos compartidos: reparto al centavo, saldos y quién le paga a quién
   lib/importar.ts     importación de respaldo JSON validada con zod
   lib/exportar.ts     Excel (carga xlsx bajo demanda) y respaldo JSON
   components/Graficas.tsx  flujo de caja, comprometido contra candado y avance, en SVG

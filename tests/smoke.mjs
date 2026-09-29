@@ -31,6 +31,11 @@ const tablas = {
   adjuntos: [{ id: "ad1", proyecto_id: PID, concepto_id: conceptos[0].id, pago_id: null, nombre: "cotizacion.pdf", ruta: `${PID}/x.pdf`, tipo: "application/pdf", tamano: 120000, created_at: "2026-09-01T00:00:00Z" }],
   catalogo_proveedores: [{ id: "cp1", nombre: "Herrería Norte", razon: "", banco: "Banorte", clabe: "999", tel: "", nota: "" }],
   plantillas: [{ id: "pl1", nombre: "Mi casa tipo", descripcion: "3 recámaras", cuerpo: [{ nombre: "Sala", pct: 50, conceptos: [{ nombre: "Sofá" }] }, { nombre: "Imprevistos", pct: 8, contingencia: true }], created_at: "2026-09-01T00:00:00Z" }],
+  gastos: [
+    { id: "gs1", proyecto_id: PID, descripcion: "Comida de la cuadrilla", monto: 900, fecha: "2026-09-05", pagado_por: UID, reparto: "igual", nota: "", user_id: UID, gasto_partes: [{ user_id: UID, monto: 450 }, { user_id: "u2", monto: 450 }] },
+    { id: "gs2", proyecto_id: PID, descripcion: "Flete de azulejo", monto: 300, fecha: "2026-09-06", pagado_por: "u2", reparto: "montos", nota: "", user_id: "u2", gasto_partes: [{ user_id: UID, monto: 100 }, { user_id: "u2", monto: 200 }] },
+  ],
+  liquidaciones: [{ id: "lq1", proyecto_id: PID, de_id: "u2", a_id: UID, monto: 50, fecha: "2026-09-07", nota: "efectivo", user_id: "u2" }],
   traspasos: [{ id: "t1", proyecto_id: PID, de_id: partidas[0].id, a_id: partidas[1].id, monto: 10000, fecha: "2026-09-04", motivo: "ajuste" }],
 };
 
@@ -54,7 +59,7 @@ async function conVista(nombre, viewport, fn) {
   await page.route("**/rest/v1/**", (r) => {
     const u = new URL(r.request().url()); const t = u.pathname.split("/").pop();
     let body = "[]";
-    if (u.pathname.includes("/rpc/")) body = t === "crear_liga_reporte" ? JSON.stringify("tok123") : t === "reporte_publico" ? (JSON.parse(r.request().postData() || "{}").t !== "tok123" ? "null" : JSON.stringify({ proyecto: proyecto, perfil: { nombre: "Arq. Prueba", despacho: "Estudio Prueba", telefono: "", logo_ruta: "" }, proveedores: tablas.proveedores, partidas: tablas.partidas, conceptos: tablas.conceptos, ajustes: tablas.concepto_ajustes, relaciones: tablas.relaciones, pagos: tablas.pagos, excedentes: tablas.excedentes, traspasos: tablas.traspasos })) : t === "miembros_de" ? JSON.stringify([{ user_id: "u2", email: "socia@casapiena.mx", rol: "editor", pendiente: false }, { user_id: null, email: "cliente@casapiena.mx", rol: "lector", pendiente: true }]) : t === "agregar_miembro" ? JSON.stringify("invitado") : "null";
+    if (u.pathname.includes("/rpc/")) body = t === "crear_liga_reporte" ? JSON.stringify("tok123") : t === "reporte_publico" ? (JSON.parse(r.request().postData() || "{}").t !== "tok123" ? "null" : JSON.stringify({ proyecto: proyecto, perfil: { nombre: "Arq. Prueba", despacho: "Estudio Prueba", telefono: "", logo_ruta: "" }, proveedores: tablas.proveedores, partidas: tablas.partidas, conceptos: tablas.conceptos, ajustes: tablas.concepto_ajustes, relaciones: tablas.relaciones, pagos: tablas.pagos, excedentes: tablas.excedentes, traspasos: tablas.traspasos })) : t === "miembros_de" ? JSON.stringify([{ user_id: "u2", email: "socia@casapiena.mx", rol: "editor", pendiente: false }, { user_id: null, email: "cliente@casapiena.mx", rol: "lector", pendiente: true }]) : t === "agregar_miembro" ? JSON.stringify("invitado") : t === "participantes_gastos" ? JSON.stringify([{ user_id: UID, email: "prueba@casapiena.mx", nombre: "Arq. Prueba", activo: true }, { user_id: "u2", email: "socia@casapiena.mx", nombre: "", activo: true }]) : "null";
     else if (r.request().method() !== "GET") body = JSON.stringify(t === "proyectos" ? { id: PID } : [{ id: "nuevo".padEnd(36, "0") }]);
     else if (t === "proyectos") body = JSON.stringify(u.searchParams.get("select") === "*" ? proyecto : [proyecto, { ...proyecto, id: "3".padEnd(36, "3"), nombre: "Otra casa", archivado: true, owner_id: "otro" }]);
     else if (t === "catalogo_proveedores" || t === "plantillas") body = JSON.stringify(tablas[t]);
@@ -80,7 +85,17 @@ await conVista("login", { width: 420, height: 860 }, async (page, paso) => {
   await page.addInitScript(() => localStorage.clear());
   await paso("pantalla de entrada", async () => { await page.goto(`http://localhost:${PORT}/`); await page.waitForSelector("input[type=email]", { timeout: 8000 }); });
   await paso("olvidé mi contraseña (modo)", async () => { await page.click("button:has-text('Olvidé mi contraseña')"); await page.waitForSelector("button:has-text('Enviarme la liga')"); await page.click("button:has-text('Ya tengo cuenta')"); await page.waitForSelector("button:has-text('Entrar')"); });
+  await paso("liga de recuperación vencida", async () => { await page.goto(`http://localhost:${PORT}/index.html#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired`); await page.waitForSelector("text=ya expiró o ya se usó", { timeout: 8000 }); if (!(await page.evaluate(() => location.hash)).startsWith("#/")) throw new Error("no limpió el hash"); });
   await paso("crear cuenta (modo)", async () => { await page.click("button:has-text('Crear cuenta')"); await page.waitForSelector("text=Elige una contraseña"); await page.click("button:has-text('Ya tengo cuenta')"); await page.waitForSelector("button:has-text('Entrar')"); });
+});
+
+await conVista("recuperar", { width: 420, height: 860 }, async (page, paso) => {
+  await page.addInitScript(() => { if (!sessionStorage.getItem("visto")) { localStorage.clear(); sessionStorage.setItem("visto", "1"); } });
+  await paso("liga de recuperación pide contraseña nueva", async () => {
+    await page.goto(`http://localhost:${PORT}/#access_token=fake.fake.fake&refresh_token=r&expires_in=3600&expires_at=${Math.floor(Date.now() / 1000) + 3600}&token_type=bearer&type=recovery`);
+    await page.waitForSelector("text=Pon tu contraseña nueva", { timeout: 8000 });
+    if (/access_token/.test(await page.evaluate(() => location.href))) throw new Error("el token quedó en la barra de direcciones");
+  });
 });
 
 await conVista("publico", { width: 420, height: 860 }, async (page, paso) => {
@@ -117,7 +132,7 @@ for (const [nombre, viewport] of [["movil", { width: 420, height: 860 }], ["escr
       if (await link.count() === 0) await page.click("button:has-text('Más')");
       await page.locator(`a[href="#/p/${PID}/${ruta}"]`).locator("visible=true").first().click();
     };
-    for (const ruta of ["compras", "pagos", "relaciones", "resumen", "proveedores", "ajustes", "obra", "hoy", "obra"]) await paso(`vista ${ruta}`, async () => { await ir(ruta); await page.waitForURL(`**/#/p/${PID}/${ruta}`); await page.waitForTimeout(400); if (process.env.SHOT) await page.screenshot({ path: `${process.env.SHOT}-${nombre}-${ruta}.png`, fullPage: true }); });
+    for (const ruta of ["compras", "pagos", "relaciones", "resumen", "proveedores", "gastos", "ajustes", "obra", "hoy", "obra"]) await paso(`vista ${ruta}`, async () => { await ir(ruta); await page.waitForURL(`**/#/p/${PID}/${ruta}`); await page.waitForTimeout(400); if (process.env.SHOT) await page.screenshot({ path: `${process.env.SHOT}-${nombre}-${ruta}.png`, fullPage: true }); });
     if (lleno) {
       await paso("obra: abrir partida", async () => { await page.click(`button:has-text("${seed.partidas[0].nombre}")`); await page.waitForSelector(`text=${seed.partidas[0].conceptos[0].nombre}`); });
       await paso("obra: diálogo concepto (PU y avance)", async () => {
@@ -143,6 +158,21 @@ for (const [nombre, viewport] of [["movil", { width: 420, height: 860 }], ["escr
       await paso("proveedores: abrir", async () => { await ir("proveedores"); await page.click("button:has-text('Muebles SA')"); await dialogo(); });
       await paso("compras: marcar siguiente", async () => { await ir("compras"); await page.click("button:has-text('Marcar')"); });
     }
+    await paso("gastos: nuevo gasto repartido", async () => {
+      await ir("gastos");
+      await page.click("button:has-text('Gasto') >> nth=-1"); await page.waitForSelector("[role=dialog] >> text=Partes iguales");
+      await page.fill("[role=dialog] input >> nth=0", "Gasolina"); await page.fill("[role=dialog] input[inputmode=decimal]", "100.01"); await page.keyboard.press("Tab");
+      await page.waitForSelector("[role=dialog] >> text=$50.01"); await page.waitForSelector("[role=dialog] >> text=$50.00");
+      await page.click("[role=dialog] button:has-text('Montos exactos')"); await page.waitForSelector("[role=dialog] button:has-text('Guardar'):not([disabled])");
+      await page.click("[role=dialog] button:has-text('Guardar')"); await page.waitForSelector("[role=dialog]", { state: "detached" });
+    });
+    if (lleno) await paso("gastos: saldos y quedar a mano", async () => {
+      // 900 a medias lo pagó UID, 300 (100 UID / 200 socia) lo pagó socia, socia ya le dio 50: socia debe 450 - 100 - 50 = 300
+      await page.waitForSelector("text=Para quedar a mano"); await page.waitForSelector("text=$300.00");
+      await page.click("text=socia le pagó a Tú"); await page.waitForSelector("[role=dialog] button:has-text('Borrar')"); await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" });
+      await page.click("button:has-text('Registrar') >> nth=0"); await page.waitForSelector("[role=dialog] >> text=Para quedar a mano"); await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" });
+      await page.click("button:has-text('Flete de azulejo')"); await page.waitForSelector("[role=dialog] >> text=Montos exactos"); await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" });
+    });
     await paso("vista reporte", async () => { await ir("reporte"); await page.waitForSelector("text=Reporte de obra"); await page.waitForSelector("text=Pagos pendientes"); await page.waitForSelector("text=Compartir con el cliente"); await page.waitForSelector("input[value*='#/r/tok123']"); await page.waitForSelector("text=Arq. Prueba"); if (process.env.SHOT) await page.screenshot({ path: `${process.env.SHOT}-${nombre}-reporte.png`, fullPage: true }); });
     await paso("manifest PWA", async () => { const r = await page.request.get(`http://localhost:${PORT}/manifest.webmanifest`); if (!r.ok()) throw new Error("manifest " + r.status()); });
     if (lleno) await paso("proveedores: nuevo con catálogo", async () => { await ir("proveedores"); await page.click("button:has-text('Proveedor')"); await page.waitForSelector("text=De mi catálogo"); await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" }); });

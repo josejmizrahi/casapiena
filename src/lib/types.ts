@@ -63,3 +63,11 @@ export interface CatalogoProveedor { id: string; nombre: string; razon: string; 
 export interface PlantillaPartida { nombre: string; pct: number; contingencia?: boolean; conceptos?: { nombre: string; unidad?: string; prioridad?: Prioridad }[] }
 export interface PlantillaGuardada { id: string; nombre: string; descripcion: string; cuerpo: PlantillaPartida[]; created_at: string }
 export interface Perfil { nombre: string; despacho: string; telefono: string; logoUrl: string }
+
+// ── gastos compartidos entre miembros ──
+export interface Participante { userId: string; email: string; nombre: string; activo: boolean }
+export interface ParteGasto { userId: string; monto: number }
+export type Reparto = "igual" | "montos";
+export interface Gasto { id: string; descripcion: string; monto: number; fecha: string; pagadoPor: string; reparto: Reparto; nota: string; capturo: string; partes: ParteGasto[] }
+export interface Liquidacion { id: string; deId: string; aId: string; monto: number; fecha: string; nota: string; capturo: string }
+export interface Gastos { participantes: Participante[]; gastos: Gasto[]; liquidaciones: Liquidacion[] }

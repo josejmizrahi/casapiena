@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,9 @@ import { Building2 } from "lucide-react";
 export default function Login() {
   const [correo, setCorreo] = useState("");
   const [pass, setPass] = useState("");
-  const [err, setErr] = useState("");
+  // aviso que deja main.tsx si la liga del correo expiró o falló
+  const [err, setErr] = useState(() => sessionStorage.getItem("obra:aviso") || "");
+  useEffect(() => sessionStorage.removeItem("obra:aviso"), []);
   const [cargando, setCargando] = useState(false);
   const [modo, setModo] = useState<"entrar" | "crear" | "olvide">("entrar");
   const [aviso, setAviso] = useState("");
@@ -17,7 +19,7 @@ export default function Login() {
     if (!listo) return;
     setErr(""); setCargando(true);
     if (modo === "olvide") {
-      const { error } = await supabase.auth.resetPasswordForEmail(correo.trim(), { redirectTo: location.origin + location.pathname });
+      const { error } = await supabase.auth.resetPasswordForEmail(correo.trim(), { redirectTo: location.origin + location.pathname.replace(/index\.html$/, "") });
       setCargando(false);
       if (error) return setErr(error.message);
       return setAviso("Te enviamos un correo con una liga para poner contraseña nueva. Ábrela desde este mismo teléfono o computadora.");
