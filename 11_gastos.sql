@@ -1,3 +1,4 @@
+-- Ya aplicado en la base el 2026-09-29.
 -- Gastos compartidos entre los miembros del proyecto (estilo Splitwise).
 -- Cada quien registra lo que pagó de su bolsa, se reparte entre los participantes
 -- y la app calcula quién le debe a quién. Las liquidaciones registran lo que se
@@ -147,7 +148,7 @@ create or replace function public.participantes_gastos(p uuid) returns table (us
 language sql stable security definer set search_path = public as $$ select * from app.participantes_gastos(p); $$;
 create or replace function public.guardar_gasto(d jsonb) returns uuid
 language sql security definer set search_path = public as $$ select app.guardar_gasto(d); $$;
-revoke all on function public.participantes_gastos(uuid) from anon;
-revoke all on function public.guardar_gasto(jsonb) from anon;
+revoke all on function public.participantes_gastos(uuid) from public, anon;
+revoke all on function public.guardar_gasto(jsonb) from public, anon;
 grant execute on function public.participantes_gastos(uuid) to authenticated;
 grant execute on function public.guardar_gasto(jsonb) to authenticated;
