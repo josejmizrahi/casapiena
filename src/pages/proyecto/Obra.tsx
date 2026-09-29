@@ -14,6 +14,12 @@ import { Semaforo } from "./Hoy";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen } from "lucide-react";
 
+/** Ya tiene monto o está cotizado. */
+const tienePrecio = (c: { total: number; precioUnitario: number; logistica: string }) => c.total > 0 || c.precioUnitario > 0 || c.logistica === "cotizado";
+/** Arriba los conceptos con precio o cotización; dentro de cada grupo se respeta el orden capturado. */
+const conPrecioPrimero = <T extends { total: number; precioUnitario: number; logistica: string }>(cs: T[]) =>
+  [...cs.filter(tienePrecio), ...cs.filter((c) => !tienePrecio(c))];
+
 export default function Obra() {
   const { p, calc, nombreProv } = useProyecto();
   const { abrir } = useModal();
@@ -68,7 +74,7 @@ export default function Obra() {
               {open && (
                 <div className="mt-2">
                   {pa.conceptos.length === 0 && <p className="text-xs text-ink-3 py-2">Sin conceptos. Agrega cada cosa que se compra o contrata aquí, con su presupuesto sin IVA.</p>}
-                  {pa.conceptos.map((c) => (
+                  {conPrecioPrimero(pa.conceptos).map((c) => (
                     <Row key={c.id} onClick={() => abrir({ tipo: "concepto", d: conceptoForm(c) })} leading={<Dot estado={c.estado} />}
                       left={<>
                         <div className="text-[14px] font-medium truncate flex items-center gap-1.5">{c.links.length > 0 && <Link2 className="size-3.5 text-ink-3 shrink-0 stroke-[1.75]" />}{c.nombre}</div>
