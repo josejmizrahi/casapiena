@@ -169,8 +169,8 @@ for (const [nombre, viewport] of [["movil", { width: 420, height: 860 }], ["escr
     if (lleno) await paso("gastos: saldos y quedar a mano", async () => {
       // 900 a medias lo pagó UID, 300 (100 UID / 200 socia) lo pagó socia, socia ya le dio 50: socia debe 450 - 100 - 50 = 300
       await page.waitForSelector("text=Para quedar a mano"); await page.waitForSelector("text=$300.00");
-      await page.click("text=socia le pagó a Tú"); await page.waitForSelector("[role=dialog] button:has-text('Borrar')"); await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" });
-      await page.click("button:has-text('Registrar') >> nth=0"); await page.waitForSelector("[role=dialog] >> text=Para quedar a mano"); await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" });
+      await page.click("text=socia le transfirió a Tú"); await page.waitForSelector("[role=dialog] button:has-text('Borrar')"); await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" });
+      await page.click("button:has-text('Saldar') >> nth=0"); await page.waitForSelector("[role=dialog] >> text=Para quedar a mano"); await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" });
       await page.click("button:has-text('Flete de azulejo')"); await page.waitForSelector("[role=dialog] >> text=Montos exactos"); await page.keyboard.press("Escape"); await page.waitForSelector("[role=dialog]", { state: "detached" });
     });
     await paso("vista reporte", async () => { await ir("reporte"); await page.waitForSelector("text=Reporte de obra"); await page.waitForSelector("text=Pagos pendientes"); await page.waitForSelector("text=Compartir con el cliente"); await page.waitForSelector("input[value*='#/r/tok123']"); await page.waitForSelector("text=Arq. Prueba"); if (process.env.SHOT) await page.screenshot({ path: `${process.env.SHOT}-${nombre}-reporte.png`, fullPage: true }); });

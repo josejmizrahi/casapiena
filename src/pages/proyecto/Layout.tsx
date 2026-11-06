@@ -10,10 +10,12 @@ import { Semaforo } from "./Hoy";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/misc";
 
 const NAV = [
-  ["hoy", "Hoy", Home], ["obra", "Obra", Hammer], ["compras", "Compras", ShoppingCart], ["pagos", "Pagos", CreditCard], ["relaciones", "Relaciones", FileText],
-  ["resumen", "Resumen", BarChart3], ["reporte", "Reporte", ClipboardList], ["gastos", "Gastos", Receipt], ["proveedores", "Proveedores", Users], ["ajustes", "Ajustes", Settings],
+  ["hoy", "Hoy", Home], ["obra", "Obra", Hammer], ["compras", "Compras", ShoppingCart], ["pagos", "Pagos a proveedores", CreditCard], ["relaciones", "Relaciones", FileText],
+  ["resumen", "Resumen", BarChart3], ["reporte", "Reporte", ClipboardList], ["gastos", "Cuentas compartidas", Receipt], ["proveedores", "Proveedores", Users], ["ajustes", "Ajustes", Settings],
 ] as const;
 const MOVIL = new Set(["hoy", "obra", "compras", "pagos"]);
+// en las pestañas inferiores no cabe el nombre completo
+const CORTO: Record<string, string> = { pagos: "Pagos" };
 
 export default function ProyectoLayout() {
   const { id = "" } = useParams();
@@ -89,14 +91,14 @@ function Shell() {
           <Outlet />
         </main>
 
-        {/* botón flotante: registrar pago desde cualquier vista (gasto compartido en Gastos) */}
-        <Button className="no-print fixed right-4 z-30 h-13 rounded-full px-6 shadow-[0_6px_20px_-8px_rgba(23,23,22,.5)] md:bottom-8 md:right-10" style={{ bottom: "calc(4.25rem + env(safe-area-inset-bottom))" }} onClick={() => abrir(enGastos ? { tipo: "gasto", d: {} } : { tipo: "pago", d: {} })}><Plus />{enGastos ? "Gasto" : "Pago"}</Button>
+        {/* botón flotante: pago a proveedor desde cualquier vista; en Cuentas compartidas, gasto compartido */}
+        <Button className="no-print fixed right-4 z-30 h-13 rounded-full px-6 shadow-[0_6px_20px_-8px_rgba(23,23,22,.5)] md:bottom-8 md:right-10" style={{ bottom: "calc(4.25rem + env(safe-area-inset-bottom))" }} onClick={() => abrir(enGastos ? { tipo: "gasto", d: {} } : { tipo: "pago", d: {} })}><Plus />{enGastos ? "Gasto compartido" : "Pago a proveedor"}</Button>
 
         {/* pestañas inferiores en móvil */}
         <nav className="no-print md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-border-2 bg-panel/95 backdrop-blur grid grid-cols-5" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
           {NAV.filter(([k]) => MOVIL.has(k)).map(([k, v, Icon]) => (
             <NavLink key={k} to={k} className={({ isActive }) => cn("flex flex-col items-center justify-center gap-1 h-14 font-mono uppercase text-[9px] tracking-[0.08em]", isActive ? "text-foreground" : "text-ink-3")}>
-              {({ isActive }) => <><Icon className={cn("size-[22px]", isActive ? "stroke-[2]" : "stroke-[1.5]")} />{v}</>}
+              {({ isActive }) => <><Icon className={cn("size-[22px]", isActive ? "stroke-[2]" : "stroke-[1.5]")} />{CORTO[k] || v}</>}
             </NavLink>
           ))}
           <DropdownMenu>
