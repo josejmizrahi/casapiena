@@ -22,7 +22,7 @@ export function GastoDialog({ d0 }: { d0: Partial<GastoForm> }) {
   const { cerrar } = useModal();
   const { data, activos, nombre, yo, accion, isLoading } = useGastos(p.id);
   const ids = activos.map((x) => x.userId);
-  const [d, setD] = useState({ descripcion: "", monto: 0, fecha: HOY(), nota: "", reparto: "igual" as Reparto, ...d0, pagadoPor: d0.pagadoPor || "" });
+  const [d, setD] = useState({ descripcion: "", monto: 0, fecha: HOY(), nota: "", reparto: "igual" as Reparto, conceptoId: "", ...d0, pagadoPor: d0.pagadoPor || "" });
   // la sesión puede resolverse después del primer render: por omisión pagó quien captura
   const pagador = d.pagadoPor || yo;
   const [sel, setSel] = useState<Set<string>>(() => new Set(d0.partes ? d0.partes.filter((x) => d0.reparto !== "igual" || x.monto > 0).map((x) => x.userId) : ids));
@@ -95,6 +95,14 @@ export function GastoDialog({ d0 }: { d0: Partial<GastoForm> }) {
           </p>
         )}
         {mismoMonto.length > 0 && <Alert>Ya hay {mismoMonto.length === 1 ? "un gasto" : `${mismoMonto.length} gastos`} de {fm2(d.monto)}: {mismoMonto.map((x) => `"${x.descripcion}" (pagó ${nombre(x.pagadoPor)}, ${fecha(x.fecha)})`).join(", ")}. Si es el mismo, no lo registres dos veces.</Alert>}
+        {p.partidas.some((pa) => pa.conceptos.length > 0) && (
+          <Field label="¿De qué parte de la obra es? (opcional)" hint="Si lo eliges, cuenta como pagado de ese concepto en Obra y Resumen.">
+            <NativeSelect value={d.conceptoId} onChange={(e) => setD({ ...d, conceptoId: e.target.value })}>
+              <option value="">No es de la obra / sin ligar</option>
+              {p.partidas.filter((pa) => pa.conceptos.length).map((pa) => <optgroup key={pa.id} label={pa.nombre}>{pa.conceptos.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}</optgroup>)}
+            </NativeSelect>
+          </Field>
+        )}
         {fueraDelProyecto && <Alert>Este gasto incluye a alguien que ya no es miembro del proyecto. Al guardar, sale del reparto.</Alert>}
         <Field label="Nota"><Textarea rows={2} value={d.nota} onChange={(e) => setD({ ...d, nota: e.target.value })} /></Field>
         <DialogActions>

@@ -37,6 +37,8 @@ export interface Meta {
 export interface Proyecto {
   id: string; meta: Meta; proveedores: Proveedor[]; partidas: Partida[]; relaciones: Relacion[];
   pagos: Pago[]; excedentes: Excedente[]; traspasos: Traspaso[];
+  /** Gastos compartidos ligados a un concepto: cuentan como pagado de ese concepto. */
+  gastosObra?: { conceptoId: string; monto: number; fecha: string }[];
 }
 export interface ProyectoResumen {
   id: string; nombre: string; clientes: string; archivado: boolean; created_at: string;
@@ -68,6 +70,6 @@ export interface Perfil { nombre: string; despacho: string; telefono: string; lo
 export interface Participante { userId: string; email: string; nombre: string; activo: boolean }
 export interface ParteGasto { userId: string; monto: number }
 export type Reparto = "igual" | "montos";
-export interface Gasto { id: string; descripcion: string; monto: number; fecha: string; pagadoPor: string; reparto: Reparto; nota: string; capturo: string; partes: ParteGasto[] }
+export interface Gasto { id: string; descripcion: string; monto: number; fecha: string; pagadoPor: string; reparto: Reparto; nota: string; capturo: string; partes: ParteGasto[]; conceptoId: string }
 export interface Liquidacion { id: string; deId: string; aId: string; monto: number; fecha: string; nota: string; capturo: string }
 export interface Gastos { participantes: Participante[]; gastos: Gasto[]; liquidaciones: Liquidacion[] }

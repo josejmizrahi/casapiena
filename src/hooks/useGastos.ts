@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import * as api from "@/api";
 import { useSesion } from "@/hooks/useSesion";
 import { aMano, saldos } from "@/lib/gastos";
+import { proyectoKey } from "@/hooks/useProyecto";
 
 export const gastosKey = (id: string) => ["gastos", id] as const;
 
@@ -27,7 +28,8 @@ export function useGastos(proyectoId: string) {
   const accion = useCallback(async (fn: () => PromiseLike<unknown>, mensaje?: string) => {
     try {
       await fn();
-      await qc.invalidateQueries({ queryKey: gastosKey(proyectoId) });
+      // un gasto ligado a un concepto cambia lo pagado de la obra
+      await Promise.all([qc.invalidateQueries({ queryKey: gastosKey(proyectoId) }), qc.invalidateQueries({ queryKey: proyectoKey(proyectoId) })]);
       if (mensaje) toast.success(mensaje);
       return true;
     } catch (e) {

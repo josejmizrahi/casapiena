@@ -129,6 +129,10 @@ export function ConceptoDialog({ d0 }: { d0: api.ConceptoForm }) {
                 left={<><div className="text-sm font-medium">Rel {x.rel} · {x.status}</div><div className="text-xs text-ink-3 flex items-center gap-1.5">{fecha(x.fecha)} <FormaBadge f={x.forma} /><FlujoBadge e={x.estado} /></div></>}
                 right={<div className="text-sm font-semibold">{fm(x.monto)}</div>} />
             ))}
+            {(p.gastosObra || []).filter((g) => g.conceptoId === d.id).map((g, i) => (
+              <Row key={`g${i}`} left={<><div className="text-sm font-medium">Gasto compartido</div><div className="text-xs text-ink-3">{fecha(g.fecha)} · pagado de su bolsa por un miembro</div></>}
+                right={<div className="text-sm font-semibold">{fm(g.monto)}</div>} />
+            ))}
             <Button variant="dashed" size="sm" className="mt-2" onClick={() => abrir({ tipo: "pago", d: { tipo: "obra", conceptoId: d.id, proveedorId: d.proveedorId, fecha: HOY(), forma: "Transferencia", monto: Math.max(0, total - pagado), rel: rels.length ? rels[rels.length - 1].n : 1, status: pagado > 0 ? "Finiquito" : "Anticipo", estado: "solicitado" } })}><Plus />Pago a este concepto</Button>
           </div>
         )}

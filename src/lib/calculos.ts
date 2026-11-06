@@ -48,6 +48,8 @@ export function calcular(p: Proyecto): Calculo {
     else compPorConcepto[pg.conceptoId] = (compPorConcepto[pg.conceptoId] || 0) + pg.monto;
     pagosPorRel[pg.rel] = (pagosPorRel[pg.rel] || 0) + pg.monto;
   }
+  // gastos compartidos ligados a un concepto: lo pagó un miembro de su bolsa, cuenta como pagado
+  for (const g of p.gastosObra || []) pagosPorConcepto[g.conceptoId] = (pagosPorConcepto[g.conceptoId] || 0) + g.monto;
   const traIn: Record<string, number> = {}, traOut: Record<string, number> = {};
   for (const t of p.traspasos) { traIn[t.aId] = (traIn[t.aId] || 0) + t.monto; traOut[t.deId] = (traOut[t.deId] || 0) + t.monto; }
 
@@ -106,6 +108,12 @@ export function calcular(p: Proyecto): Calculo {
     const ym = f.slice(0, 7);
     meses[ym] ||= { ym, mes: mesLabel(ym), pagado: 0, previsto: 0, acumulado: 0 };
     if (pg.estado === "pagado") meses[ym].pagado += pg.monto; else meses[ym].previsto += pg.monto;
+  }
+  for (const g of p.gastosObra || []) {
+    if (!g.fecha) continue;
+    const ym = g.fecha.slice(0, 7);
+    meses[ym] ||= { ym, mes: mesLabel(ym), pagado: 0, previsto: 0, acumulado: 0 };
+    meses[ym].pagado += g.monto;
   }
   const flujo = Object.values(meses).sort((a, b) => a.ym.localeCompare(b.ym));
   let acum = 0; for (const m of flujo) { acum += m.pagado + m.previsto; m.acumulado = acum; }
