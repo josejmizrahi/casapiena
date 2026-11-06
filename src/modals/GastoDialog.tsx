@@ -55,7 +55,7 @@ export function GastoDialog({ d0 }: { d0: Partial<GastoForm> }) {
           <Field label="Monto"><MoneyInput value={d.monto} onChange={(v) => setD({ ...d, monto: v })} /></Field>
           <Field label="Fecha"><Input type="date" value={d.fecha} onChange={(e) => setD({ ...d, fecha: e.target.value })} /></Field>
         </div>
-        <Field label="Pagó">
+        <Field label="¿Quién lo pagó de su bolsa?">
           <NativeSelect value={pagador} onChange={(e) => setD({ ...d, pagadoPor: e.target.value })}>
             {!ids.includes(pagador) && <option value={pagador}>{isLoading ? "Cargando…" : "Elige quién pagó"}</option>}
             {activos.map((x) => <option key={x.userId} value={x.userId}>{nombre(x.userId)}{x.userId !== yo && x.nombre ? ` · ${x.email}` : ""}</option>)}
@@ -109,7 +109,7 @@ export function GastoDialog({ d0 }: { d0: Partial<GastoForm> }) {
 
 export interface LiquidacionForm { id?: string; deId: string; aId: string; monto: number; fecha: string; nota: string }
 
-/** Pago entre miembros para saldar cuentas. Se registra o se borra; no se edita. */
+/** Transferencia entre miembros para saldar la deuda. Se registra o se borra; no se edita. */
 export function LiquidacionDialog({ d0 }: { d0: Partial<LiquidacionForm> }) {
   const { p } = useProyecto();
   const { cerrar } = useModal();
@@ -118,8 +118,8 @@ export function LiquidacionDialog({ d0 }: { d0: Partial<LiquidacionForm> }) {
   const de = d.deId || yo;
   const solo = !!d.id;
   const valido = de && d.aId && de !== d.aId && d.monto > 0;
-  const guardar = async () => { if (await accion(() => api.guardarLiquidacion(p.id, { ...d, deId: de }), "Pago registrado")) cerrar(); };
-  const borrar = async () => { if (d.id && confirm("¿Borrar este pago entre miembros?") && await accion(() => api.borrarLiquidacion(d.id!), "Pago borrado")) cerrar(); };
+  const guardar = async () => { if (await accion(() => api.guardarLiquidacion(p.id, { ...d, deId: de }), "Transferencia registrada")) cerrar(); };
+  const borrar = async () => { if (d.id && confirm("¿Borrar esta transferencia?") && await accion(() => api.borrarLiquidacion(d.id!), "Transferencia borrada")) cerrar(); };
   const opciones = (actual: string) => (
     <>
       {!activos.some((x) => x.userId === actual) && <option value={actual}>{actual ? nombre(actual) : "Elige"}</option>}
@@ -128,9 +128,9 @@ export function LiquidacionDialog({ d0 }: { d0: Partial<LiquidacionForm> }) {
   );
   return (
     <Dialog open onOpenChange={(o) => !o && cerrar()}>
-      <DialogContent title={solo ? "Pago entre miembros" : "Registrar pago"} description="Para quedar a mano">
+      <DialogContent title={solo ? "Transferencia para saldar" : "Saldar deuda"} description="Para quedar a mano">
         <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
-          <Field label="Paga"><NativeSelect disabled={solo} value={de} onChange={(e) => setD({ ...d, deId: e.target.value })}>{opciones(de)}</NativeSelect></Field>
+          <Field label="Transfiere"><NativeSelect disabled={solo} value={de} onChange={(e) => setD({ ...d, deId: e.target.value })}>{opciones(de)}</NativeSelect></Field>
           <ArrowRight className="size-4 text-ink-3 mb-3.5" />
           <Field label="Recibe"><NativeSelect disabled={solo} value={d.aId} onChange={(e) => setD({ ...d, aId: e.target.value })}>{opciones(d.aId)}</NativeSelect></Field>
         </div>

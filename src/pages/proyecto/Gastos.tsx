@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { ArrowRight, Plus } from "lucide-react";
 import { useProyecto } from "@/hooks/useProyecto";
 import { useModal } from "@/hooks/useModal";
@@ -48,6 +49,7 @@ export default function Gastos() {
 
   return (
     <>
+      <p className="text-[13px] text-ink-2 leading-snug">Lo que cada quien pagó de su bolsa, cómo se reparte y quién le debe a quién. No toca el presupuesto de la obra; los pagos a proveedores van en <Link to="../pagos" className="underline underline-offset-2 text-foreground">Pagos a proveedores</Link>.</p>
       <StatStrip>
         <Stat label="Gastos del grupo" value={fm(total)} sub={plural(data.gastos.length, "gasto")} />
         <Stat label="Tú pagaste" value={fm(mio?.pagado || 0)} sub={`${pct(mio?.pagado || 0, total)}% del total`} />
@@ -63,7 +65,7 @@ export default function Gastos() {
       ) : (
         <>
           <Card>
-            <CardHeader><div><CardTitle>Para quedar a mano</CardTitle><CardDescription>La menor cantidad de pagos para saldar todo. Cuando alguien pague, regístralo.</CardDescription></div></CardHeader>
+            <CardHeader><div><CardTitle>Para quedar a mano</CardTitle><CardDescription>Lo que falta transferir para quedar a mano. Cuando alguien transfiera, toca "Saldar" para registrarlo.</CardDescription></div></CardHeader>
             <CardContent>
               {transferencias.length === 0 && <p className="py-3 text-[14px] text-ink-2">Todos están a mano.</p>}
               {transferencias.map((t) => (
@@ -72,7 +74,7 @@ export default function Gastos() {
                     <div className="text-[15px] font-medium flex items-center gap-1.5 flex-wrap"><span className={cn(t.deId === yo && "text-bad")}>{nombre(t.deId)}</span><ArrowRight className="size-3.5 text-ink-3" /><span className={cn(t.aId === yo && "text-ok")}>{nombre(t.aId)}</span></div>
                     <div className="text-xs text-ink-3">{t.deId === yo ? "Le debes" : t.aId === yo ? "Te debe" : "Le debe"} {fm2(t.monto)}</div>
                   </>}
-                  right={<div className="flex items-center gap-3"><span className="text-[17px] font-semibold">{fm2(t.monto)}</span><Button size="sm" variant="outline" onClick={() => abrir({ tipo: "liquidacion", d: { deId: t.deId, aId: t.aId, monto: t.monto, fecha: HOY(), nota: "" } })}>Registrar</Button></div>}
+                  right={<div className="flex items-center gap-3"><span className="text-[17px] font-semibold">{fm2(t.monto)}</span><Button size="sm" variant="outline" onClick={() => abrir({ tipo: "liquidacion", d: { deId: t.deId, aId: t.aId, monto: t.monto, fecha: HOY(), nota: "" } })}>Saldar</Button></div>}
                 />
               ))}
             </CardContent>
@@ -95,7 +97,7 @@ export default function Gastos() {
                       <div><div className="text-ink-3">Pagó</div><div className="font-medium">{fm2(s.pagado)}</div><div className="text-[11px] text-ink-3">{pct(s.pagado, total)}% del total</div></div>
                       <div><div className="text-ink-3">Le toca</div><div className="font-medium">{fm2(s.consumo)}</div></div>
                       <div><div className="text-ink-3">{s.pagado >= s.consumo ? "Puso de más" : "Puso de menos"}</div><div className="font-medium">{fm2(Math.abs(s.pagado - s.consumo))}</div>
-                        {Math.abs(pagos) > 0.004 && <div className="text-[11px] text-ink-3">{pagos > 0 ? `pagó ${fm2(pagos)} a otros` : `recibió ${fm2(-pagos)}`}</div>}</div>
+                        {Math.abs(pagos) > 0.004 && <div className="text-[11px] text-ink-3">{pagos > 0 ? `ya transfirió ${fm2(pagos)}` : `ya recibió ${fm2(-pagos)}`}</div>}</div>
                     </div>
                   </div>
                 );
@@ -106,7 +108,7 @@ export default function Gastos() {
           <Card>
             <CardHeader>
               <CardTitle>Movimientos</CardTitle>
-              <Button size="sm" variant="outline" onClick={() => abrir({ tipo: "liquidacion", d: {} })}>Registrar pago</Button>
+              <Button size="sm" variant="outline" onClick={() => abrir({ tipo: "liquidacion", d: {} })}>Saldar deuda</Button>
             </CardHeader>
             <CardContent>
               <Segmented className="mb-1" value={filtro} onChange={setFiltro}
@@ -123,8 +125,8 @@ export default function Gastos() {
                       if (m.tipo === "liq") return (
                         <Row key={m.x.id} onClick={() => abrir({ tipo: "liquidacion", d: { ...m.x } })}
                           left={<>
-                            <div className="text-sm font-medium truncate">{nombre(m.x.deId)} le pagó a {nombre(m.x.aId)}</div>
-                            <div className="text-xs text-ink-3 truncate">Pago entre miembros · {fecha(m.x.fecha)}{m.x.nota ? ` · ${m.x.nota}` : ""}</div>
+                            <div className="text-sm font-medium truncate">{nombre(m.x.deId)} le transfirió a {nombre(m.x.aId)}</div>
+                            <div className="text-xs text-ink-3 truncate">Para saldar la deuda · {fecha(m.x.fecha)}{m.x.nota ? ` · ${m.x.nota}` : ""}</div>
                           </>}
                           right={<div className="text-sm font-semibold text-ink-2">{fm2(m.x.monto)}</div>}
                         />

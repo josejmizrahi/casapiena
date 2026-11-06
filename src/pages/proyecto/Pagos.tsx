@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { useProyecto } from "@/hooks/useProyecto";
 import { pagoDesde, useModal } from "@/hooks/useModal";
@@ -21,6 +22,7 @@ export default function Pagos() {
   const marcar = (id: string, estado: EstadoPago) => accion(() => api.marcarPago(id, estado, HOY()), estado === "pagado" ? "Marcado como pagado" : "Autorizado");
   return (
     <>
+      <p className="text-[13px] text-ink-2 leading-snug">Lo que se les paga a los proveedores de la obra, contra el presupuesto. ¿Pagaste algo de tu bolsa y hay que repartirlo entre ustedes? Eso va en <Link to="../gastos" className="underline underline-offset-2 text-foreground">Cuentas compartidas</Link>.</p>
       <StatStrip>
         <Stat label="Pagado" value={fm(calc.pagadoTotal)} tone="ok" />
         <Stat label="En trámite" value={fm(calc.porPagarObra)} tone="warn" />
