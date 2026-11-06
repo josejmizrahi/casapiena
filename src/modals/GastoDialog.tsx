@@ -7,7 +7,7 @@ import * as api from "@/api";
 import type { GastoForm } from "@/api";
 import type { Reparto } from "@/lib/types";
 import { repartirIgual } from "@/lib/gastos";
-import { HOY, cn, fm2 } from "@/lib/utils";
+import { HOY, cn, fecha, fm2 } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogActions, DialogContent } from "@/components/ui/dialog";
 import { Input, NativeSelect, Textarea } from "@/components/ui/input";
@@ -20,7 +20,7 @@ import { Alert } from "@/components/ui/misc";
 export function GastoDialog({ d0 }: { d0: Partial<GastoForm> }) {
   const { p } = useProyecto();
   const { cerrar } = useModal();
-  const { activos, nombre, yo, accion, isLoading } = useGastos(p.id);
+  const { data, activos, nombre, yo, accion, isLoading } = useGastos(p.id);
   const ids = activos.map((x) => x.userId);
   const [d, setD] = useState({ descripcion: "", monto: 0, fecha: HOY(), nota: "", reparto: "igual" as Reparto, ...d0, pagadoPor: d0.pagadoPor || "" });
   // la sesión puede resolverse después del primer render: por omisión pagó quien captura
@@ -40,6 +40,11 @@ export function GastoDialog({ d0 }: { d0: Partial<GastoForm> }) {
 
   const guardar = async () => { if (await accion(() => api.guardarGasto(p.id, { ...d, pagadoPor: pagador, partes }), d.id ? "Gasto actualizado" : "Gasto registrado")) cerrar(); };
   const borrar = async () => { if (d.id && confirm("¿Borrar este gasto?") && await accion(() => api.borrarGasto(d.id!), "Gasto borrado")) cerrar(); };
+  // otro gasto con el mismo monto: lo más común es capturar dos veces lo mismo
+  const mismoMonto = d.monto > 0 ? (data?.gastos || []).filter((x) => x.id !== d.id && Math.round(x.monto * 100) === Math.round(d.monto * 100)) : [];
+  // en palabras: quién le debe cuánto a quien pagó por este gasto
+  const deudas = partes.filter((x) => x.userId !== pagador && x.monto > 0);
+  const soloA = (u: string | null) => { setSel(new Set(u ? [u] : ids)); setD({ ...d, reparto: "igual" }); };
   const toggle = (u: string, on: boolean) => setSel((s) => { const n = new Set(s); if (on) n.add(u); else n.delete(u); return n; });
 
   return (
@@ -59,6 +64,14 @@ export function GastoDialog({ d0 }: { d0: Partial<GastoForm> }) {
         <div className="space-y-2">
           <Segmented value={d.reparto} onChange={(v) => { if (v === "montos" && d.reparto === "igual") setMontos(Object.fromEntries(partes.map((x) => [x.userId, x.monto]))); setD({ ...d, reparto: v }); }}
             options={[["igual", "Partes iguales"], ["montos", "Montos exactos"]]} />
+          {d.reparto === "igual" && activos.length > 1 && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              <Button type="button" size="sm" variant={idsSel.length === ids.length ? "default" : "outline"} onClick={() => soloA(null)}>Entre todos</Button>
+              {activos.filter((x) => x.userId !== pagador).map((x) => (
+                <Button key={x.userId} type="button" size="sm" variant={idsSel.length === 1 && idsSel[0] === x.userId ? "default" : "outline"} onClick={() => soloA(x.userId)}>Le toca todo a {nombre(x.userId)}</Button>
+              ))}
+            </div>
+          )}
           {activos.length === 0 && !isLoading && <p className="text-[13px] text-ink-2">No hay miembros con cuenta en este proyecto. Invítalos desde Ajustes.</p>}
           {activos.map((x) => d.reparto === "igual" ? (
             <div key={x.userId} className="flex items-center justify-between gap-3 border-t border-border first:border-t-0">
@@ -75,6 +88,13 @@ export function GastoDialog({ d0 }: { d0: Partial<GastoForm> }) {
             <p className="text-[13px] text-bad num">{falta > 0 ? `Faltan ${fm2(falta)} por repartir` : `Te pasas por ${fm2(-falta)}`}</p>
           )}
         </div>
+        {d.monto > 0 && Math.abs(falta) < 0.005 && ids.includes(pagador) && (
+          <p className="text-[13px] text-ink-2">
+            {deudas.length === 0 ? `Nadie le debe nada a ${nombre(pagador) === "Tú" ? "ti" : nombre(pagador)} por este gasto.`
+              : deudas.map((x) => `${nombre(x.userId)} ${x.userId === yo ? "le debes" : "le debe"} ${fm2(x.monto)} a ${pagador === yo ? "ti" : nombre(pagador)}`).join(" · ") + " por este gasto."}
+          </p>
+        )}
+        {mismoMonto.length > 0 && <Alert>Ya hay {mismoMonto.length === 1 ? "un gasto" : `${mismoMonto.length} gastos`} de {fm2(d.monto)}: {mismoMonto.map((x) => `"${x.descripcion}" (pagó ${nombre(x.pagadoPor)}, ${fecha(x.fecha)})`).join(", ")}. Si es el mismo, no lo registres dos veces.</Alert>}
         {fueraDelProyecto && <Alert>Este gasto incluye a alguien que ya no es miembro del proyecto. Al guardar, sale del reparto.</Alert>}
         <Field label="Nota"><Textarea rows={2} value={d.nota} onChange={(e) => setD({ ...d, nota: e.target.value })} /></Field>
         <DialogActions>

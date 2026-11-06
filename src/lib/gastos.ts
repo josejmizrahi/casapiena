@@ -1,4 +1,4 @@
-import type { Gastos, ParteGasto } from "@/lib/types";
+import type { Gasto, Gastos, ParteGasto } from "@/lib/types";
 
 const cent = (v: number) => Math.round(v * 100);
 
@@ -42,5 +42,19 @@ export function aMano(s: Saldo[]): Transferencia[] {
     if (!deudores[i].c) i++;
     if (!acreedores[j].c) j++;
   }
+  return out;
+}
+
+/** Lo que un gasto mueve el saldo de u: lo que pagó menos lo que le toca. Positivo: a su favor. */
+export function efecto(x: Gasto, u: string): number {
+  return ((x.pagadoPor === u ? cent(x.monto) : 0) - cent(x.partes.find((p) => p.userId === u)?.monto || 0)) / 100;
+}
+
+/** Gastos con el mismo monto que otro: casi siempre es el mismo gasto capturado dos veces. */
+export function posiblesDuplicados(gastos: Gasto[]): Map<string, Gasto[]> {
+  const porMonto = new Map<number, Gasto[]>();
+  for (const x of gastos) { const k = cent(x.monto); porMonto.set(k, [...(porMonto.get(k) || []), x]); }
+  const out = new Map<string, Gasto[]>();
+  for (const grupo of porMonto.values()) if (grupo.length > 1) for (const x of grupo) out.set(x.id, grupo.filter((y) => y.id !== x.id));
   return out;
 }
