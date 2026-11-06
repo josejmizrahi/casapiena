@@ -20,7 +20,7 @@ export const borrarProyecto = (id: string) => supabase.from("proyectos").delete(
 
 // Carga el proyecto completo en la forma que usa la interfaz.
 export async function cargar(proyectoId: string): Promise<Proyecto> {
-  const [proy, provs, parts, rels, pags, excs, tras] = (await Promise.all([
+  const [proy, provs, parts, rels, pags, excs, tras, gas] = (await Promise.all([
     supabase.from("proyectos").select("*").eq("id", proyectoId).single(),
     supabase.from("proveedores").select("*").eq("proyecto_id", proyectoId).order("nombre"),
     supabase.from("partidas").select("*").eq("proyecto_id", proyectoId).order("orden"),
@@ -28,6 +28,8 @@ export async function cargar(proyectoId: string): Promise<Proyecto> {
     supabase.from("pagos").select("*").eq("proyecto_id", proyectoId),
     supabase.from("excedentes").select("*").eq("proyecto_id", proyectoId).order("fecha"),
     supabase.from("traspasos").select("*").eq("proyecto_id", proyectoId).order("fecha"),
+    // "*" y no la columna: así sigue cargando aunque aún no exista gastos.concepto_id
+    supabase.from("gastos").select("*").eq("proyecto_id", proyectoId),
   ])).map((r) => ok<any>(r));
 
   const partIds = parts.map((x: any) => x.id);
@@ -40,12 +42,12 @@ export async function cargar(proyectoId: string): Promise<Proyecto> {
       ])).map((r) => ok<any>(r))
     : [[], []];
 
-  return armarProyecto({ proy, provs, parts, cons, links, ajus, rels, pags, excs, tras });
+  return armarProyecto({ proy, provs, parts, cons, links, ajus, rels, pags, excs, tras, gas });
 }
 
 /** Convierte filas de la base en el Proyecto que usa la interfaz. Lo usan cargar() y el reporte público. */
-export function armarProyecto(f: { proy: any; provs: any[]; parts: any[]; cons: any[]; links: any[]; ajus: any[]; rels: any[]; pags: any[]; excs: any[]; tras: any[] }): Proyecto {
-  const { proy, provs, parts, cons, links, ajus, rels, pags, excs, tras } = f;
+export function armarProyecto(f: { proy: any; provs: any[]; parts: any[]; cons: any[]; links: any[]; ajus: any[]; rels: any[]; pags: any[]; excs: any[]; tras: any[]; gas?: any[] }): Proyecto {
+  const { proy, provs, parts, cons, links, ajus, rels, pags, excs, tras, gas = [] } = f;
   const linksDe: Record<string, Concepto["links"]> = {};
   for (const l of links) (linksDe[l.concepto_id] ||= []).push({ id: l.id, titulo: l.titulo || "", url: l.url });
   const ajusDe: Record<string, Concepto["ajustes"]> = {};
@@ -79,6 +81,7 @@ export function armarProyecto(f: { proy: any; provs: any[]; parts: any[]; cons: 
     })),
     excedentes: excs.map((e: any): Excedente => ({ id: e.id, concepto: e.concepto, monto: +e.monto, fecha: e.fecha })),
     traspasos: tras.map((t: any): Traspaso => ({ id: t.id, deId: t.de_id, aId: t.a_id, monto: +t.monto, fecha: t.fecha, motivo: t.motivo || "" })),
+    gastosObra: gas.filter((g: any) => g.concepto_id).map((g: any) => ({ conceptoId: g.concepto_id, monto: +g.monto, fecha: g.fecha })),
   };
 }
 
@@ -311,7 +314,7 @@ export async function cargarGastos(proyectoId: string): Promise<Gastos> {
   return {
     participantes: (part || []).map((x: any): Participante => ({ userId: x.user_id, email: x.email || "", nombre: x.nombre || "", activo: x.activo !== false })),
     gastos: (gs || []).map((g: any): Gasto => ({
-      id: g.id, descripcion: g.descripcion, monto: +g.monto, fecha: g.fecha, pagadoPor: g.pagado_por, reparto: g.reparto || "igual", nota: g.nota || "", capturo: g.user_id || "",
+      id: g.id, descripcion: g.descripcion, monto: +g.monto, fecha: g.fecha, pagadoPor: g.pagado_por, reparto: g.reparto || "igual", nota: g.nota || "", capturo: g.user_id || "", conceptoId: g.concepto_id || "",
       partes: (g.gasto_partes || []).map((x: any) => ({ userId: x.user_id, monto: +x.monto })),
     })),
     liquidaciones: (lq || []).map((l: any): Liquidacion => ({ id: l.id, deId: l.de_id, aId: l.a_id, monto: +l.monto, fecha: l.fecha, nota: l.nota || "", capturo: l.user_id || "" })),
@@ -319,7 +322,7 @@ export async function cargarGastos(proyectoId: string): Promise<Gastos> {
 }
 export type GastoForm = Omit<Gasto, "id" | "capturo"> & { id?: string };
 export const guardarGasto = async (proyectoId: string, d: GastoForm): Promise<string> => ok(await supabase.rpc("guardar_gasto", {
-  d: { id: d.id || null, proyecto_id: proyectoId, descripcion: d.descripcion, monto: d.monto, fecha: d.fecha, pagado_por: d.pagadoPor, reparto: d.reparto, nota: d.nota, partes: d.partes.map((x) => ({ user_id: x.userId, monto: x.monto })) },
+  d: { id: d.id || null, proyecto_id: proyectoId, descripcion: d.descripcion, monto: d.monto, fecha: d.fecha, pagado_por: d.pagadoPor, reparto: d.reparto, nota: d.nota, concepto_id: d.conceptoId || null, partes: d.partes.map((x) => ({ user_id: x.userId, monto: x.monto })) },
 }));
 export const borrarGasto = (id: string) => supabase.from("gastos").delete().eq("id", id).then(ok);
 export async function guardarLiquidacion(proyectoId: string, d: { deId: string; aId: string; monto: number; fecha: string; nota: string }) {

@@ -17,7 +17,7 @@ import { Empty, Row } from "@/components/ui/misc";
 
 /** Gastos compartidos entre los miembros del proyecto: quién pagó, cuánto le toca a cada quien y cómo quedar a mano. */
 export default function Gastos() {
-  const { p } = useProyecto();
+  const { p, conceptoDe } = useProyecto();
   const { abrir } = useModal();
   const { data, isLoading, error, nombre, saldos, transferencias, yo } = useGastos(p.id);
   const [filtro, setFiltro] = useState("todos");
@@ -29,6 +29,8 @@ export default function Gastos() {
   const mio = saldos.find((x) => x.userId === yo);
   const neto = mio?.neto || 0;
   const dup = posiblesDuplicados(data.gastos);
+  const hayObra = p.partidas.some((pa) => pa.conceptos.length > 0);
+  const sinLigar = hayObra ? data.gastos.filter((x) => !x.conceptoId).length : 0;
   const pagadores = [...new Set(data.gastos.map((x) => x.pagadoPor))];
   const personas = [...saldos].filter((s) => s.pagado || s.consumo || Math.abs(s.neto) > 0.004).sort((a, b) => b.pagado - a.pagado);
 
@@ -43,13 +45,13 @@ export default function Gastos() {
     ...data.gastos.map((x) => ({ tipo: "gasto" as const, fecha: x.fecha, x })),
     ...data.liquidaciones.map((x) => ({ tipo: "liq" as const, fecha: x.fecha, x })),
   ]
-    .filter((m) => filtro === "todos" ? true : filtro === "dup" ? m.tipo === "gasto" && dup.has(m.x.id) : m.tipo === "gasto" ? m.x.pagadoPor === filtro : m.x.deId === filtro)
+    .filter((m) => filtro === "todos" ? true : filtro === "sinLigar" ? m.tipo === "gasto" && !m.x.conceptoId : filtro === "dup" ? m.tipo === "gasto" && dup.has(m.x.id) : m.tipo === "gasto" ? m.x.pagadoPor === filtro : m.x.deId === filtro)
     .sort((a, b) => b.fecha.localeCompare(a.fecha));
   const meses = [...new Set(movimientos.map((m) => m.fecha.slice(0, 7)))];
 
   return (
     <>
-      <p className="text-[13px] text-ink-2 leading-snug">Lo que cada quien pagó de su bolsa, cómo se reparte y quién le debe a quién. No toca el presupuesto de la obra; los pagos a proveedores van en <Link to="../pagos" className="underline underline-offset-2 text-foreground">Pagos a proveedores</Link>.</p>
+      <p className="text-[13px] text-ink-2 leading-snug">Lo que cada quien pagó de su bolsa, cómo se reparte y quién le debe a quién. Si ligas un gasto a una parte de la obra, cuenta como pagado en el presupuesto. Los pagos que se tramitan con relaciones van en <Link to="../pagos" className="underline underline-offset-2 text-foreground">Pagos a proveedores</Link>.</p>
       <StatStrip>
         <Stat label="Gastos del grupo" value={fm(total)} sub={plural(data.gastos.length, "gasto")} />
         <Stat label="Tú pagaste" value={fm(mio?.pagado || 0)} sub={`${pct(mio?.pagado || 0, total)}% del total`} />
@@ -59,7 +61,7 @@ export default function Gastos() {
       {movimientos.length === 0 && filtro === "todos" ? (
         <Empty>
           <p className="font-medium text-foreground">Todavía no hay gastos compartidos</p>
-          <p className="mt-1">Registra lo que cada quien paga de su bolsa (comidas, fletes, material de urgencia…), repártelo entre los miembros del proyecto y aquí verás quién le debe a quién. No afecta el presupuesto de la obra.</p>
+          <p className="mt-1">Registra lo que cada quien paga de su bolsa (comidas, fletes, material de urgencia…), repártelo entre los miembros del proyecto y aquí verás quién le debe a quién. Si lo ligas a una parte de la obra, también cuenta como pagado en el presupuesto.</p>
           <Button size="sm" className="mt-3" onClick={() => abrir({ tipo: "gasto", d: {} })}><Plus />Registrar el primer gasto</Button>
         </Empty>
       ) : (
@@ -112,7 +114,8 @@ export default function Gastos() {
             </CardHeader>
             <CardContent>
               <Segmented className="mb-1" value={filtro} onChange={setFiltro}
-                options={[["todos", "Todos"], ...pagadores.map((u): [string, string] => [u, u === yo ? "Pagaste tú" : `Pagó ${nombre(u)}`]), ...(dup.size ? [["dup", `¿Duplicados? (${dup.size})`] as [string, string]] : [])]} />
+                options={[["todos", "Todos"], ...pagadores.map((u): [string, string] => [u, u === yo ? "Pagaste tú" : `Pagó ${nombre(u)}`]), ...(dup.size ? [["dup", `¿Duplicados? (${dup.size})`] as [string, string]] : []), ...(sinLigar ? [["sinLigar", `Sin ligar a la obra (${sinLigar})`] as [string, string]] : [])]} />
+              {filtro === "sinLigar" && <p className="py-2 text-[13px] text-ink-2">Gastos que no cuentan contra el presupuesto. Ábrelos y elige de qué parte de la obra son.</p>}
               {filtro === "dup" && <p className="py-2 text-[13px] text-ink-2">Gastos con el mismo monto que otro. Si son el mismo gasto capturado dos veces, borra uno.</p>}
               {movimientos.length === 0 && <p className="py-3 text-[14px] text-ink-2">No hay movimientos con este filtro.</p>}
               {meses.map((mes) => {
@@ -136,7 +139,7 @@ export default function Gastos() {
                         <Row key={m.x.id} onClick={() => abrir({ tipo: "gasto", d: { ...m.x } })}
                           left={<>
                             <div className="text-sm font-medium truncate flex items-center gap-1.5">{otros && <Badge variant="warn" title={`Mismo monto que: ${otros.map((o) => o.descripcion).join(", ")}`}>¿Duplicado?</Badge>}<span className="truncate">{m.x.descripcion}</span></div>
-                            <div className="text-xs text-ink-3 truncate">{m.x.pagadoPor === yo ? "Pagaste" : `Pagó ${nombre(m.x.pagadoPor)}`} · {fecha(m.x.fecha)} · {reparto(m.x)}</div>
+                            <div className="text-xs text-ink-3 truncate">{m.x.pagadoPor === yo ? "Pagaste" : `Pagó ${nombre(m.x.pagadoPor)}`} · {fecha(m.x.fecha)} · {reparto(m.x)}{m.x.conceptoId && conceptoDe(m.x.conceptoId) ? ` · ${conceptoDe(m.x.conceptoId)!.nombre}` : ""}</div>
                           </>}
                           right={<><div className="text-sm font-semibold">{fm2(m.x.monto)}</div>
                             <div className={cn("text-[11px]", e > 0.004 ? "text-ok" : e < -0.004 ? "text-bad" : "text-ink-3")}>{e > 0.004 ? `+${fm2(e)} a tu favor` : e < -0.004 ? `−${fm2(-e)} a tu cargo` : "no te mueve"}</div></>}

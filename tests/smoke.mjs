@@ -32,7 +32,7 @@ const tablas = {
   catalogo_proveedores: [{ id: "cp1", nombre: "Herrería Norte", razon: "", banco: "Banorte", clabe: "999", tel: "", nota: "" }],
   plantillas: [{ id: "pl1", nombre: "Mi casa tipo", descripcion: "3 recámaras", cuerpo: [{ nombre: "Sala", pct: 50, conceptos: [{ nombre: "Sofá" }] }, { nombre: "Imprevistos", pct: 8, contingencia: true }], created_at: "2026-09-01T00:00:00Z" }],
   gastos: [
-    { id: "gs1", proyecto_id: PID, descripcion: "Comida de la cuadrilla", monto: 900, fecha: "2026-09-05", pagado_por: UID, reparto: "igual", nota: "", user_id: UID, gasto_partes: [{ user_id: UID, monto: 450 }, { user_id: "u2", monto: 450 }] },
+    { id: "gs1", proyecto_id: PID, descripcion: "Comida de la cuadrilla", monto: 900, fecha: "2026-09-05", pagado_por: UID, reparto: "igual", nota: "", user_id: UID, concepto_id: conceptos[1].id, gasto_partes: [{ user_id: UID, monto: 450 }, { user_id: "u2", monto: 450 }] },
     { id: "gs2", proyecto_id: PID, descripcion: "Flete de azulejo", monto: 300, fecha: "2026-09-06", pagado_por: "u2", reparto: "montos", nota: "", user_id: "u2", gasto_partes: [{ user_id: UID, monto: 100 }, { user_id: "u2", monto: 200 }] },
   ],
   liquidaciones: [{ id: "lq1", proyecto_id: PID, de_id: "u2", a_id: UID, monto: 50, fecha: "2026-09-07", nota: "efectivo", user_id: "u2" }],
